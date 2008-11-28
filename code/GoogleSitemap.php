@@ -51,7 +51,7 @@ class GoogleSitemap extends Controller {
 					// Change frequency, so we set that here.
 					$properties = $page->toMap();
 					$created = new SSDatetime($properties['Created']);
-					$now = new SSDatetime();
+					$now = new SSDatetime(date('Y-m-d H:i:s'));
 					$versions = $properties['Version'];
 					$timediff = $now->format('U') - $created->format('U');
 			
