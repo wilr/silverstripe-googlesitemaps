@@ -50,8 +50,10 @@ class GoogleSitemap extends Controller {
 					// The one field that isn't easy to deal with in the template is
 					// Change frequency, so we set that here.
 					$properties = $page->toMap();
-					$created = new SSDatetime($properties['Created']);
-					$now = new SSDatetime(date('Y-m-d H:i:s'));
+					$created = new SSDatetime();
+					$created->value = $properties['Created'];
+					$now = new SSDatetime();
+					$now->value = date('Y-m-d H:i:s');
 					$versions = $properties['Version'];
 					$timediff = $now->format('U') - $created->format('U');
 			
@@ -62,13 +64,13 @@ class GoogleSitemap extends Controller {
 			
 					if($period > 60*60*24*365) { // > 1 year
 						$page->ChangeFreq='yearly';
-					} else if($period > 60*60*24*30) { // > ~1 month
+					} elseif($period > 60*60*24*30) { // > ~1 month
 						$page->ChangeFreq='monthly';
-					} else if($period > 60*60*24*7) { // > 1 week
+					} elseif($period > 60*60*24*7) { // > 1 week
 						$page->ChangeFreq='weekly';
-					} else if($period > 60*60*24) { // > 1 day
+					} elseif($period > 60*60*24) { // > 1 day
 						$page->ChangeFreq='daily';
-					} else if($period > 60*60) { // > 1 hour
+					} elseif($period > 60*60) { // > 1 hour
 						$page->ChangeFreq='hourly';
 					} else { // < 1 hour
 						$page->ChangeFreq='always';
@@ -219,7 +221,7 @@ class GoogleSitemapDecorator extends SiteTreeDecorator {
 			$parentStack = $this->owner->parentStack();
 			$numParents = is_array($parentStack) ? count($parentStack) - 1: 0;
 			return max(0.1, 1.0 - ($numParents / 10));
-		} else if($this->owner->getField('Priority') == -1) {
+		} elseif($this->owner->getField('Priority') == -1) {
 			return 0;
 		} else {
 			return $this->owner->getField('Priority');
