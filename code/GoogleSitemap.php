@@ -125,6 +125,7 @@ class GoogleSitemap extends Controller {
 	
 	function index($url) {
 		if(self::$enabled) {
+			SSViewer::set_source_file_comments(false);
 			// We need to override the default content-type
 			ContentNegotiator::disable();
 			header('Content-type: application/xml; charset="utf-8"');
