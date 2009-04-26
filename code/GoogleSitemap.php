@@ -128,7 +128,7 @@ class GoogleSitemap extends Controller {
 			SSViewer::set_source_file_comments(false);
 			// We need to override the default content-type
 			ContentNegotiator::disable();
-			header('Content-type: application/xml; charset="utf-8"');
+			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 
 			// But we want to still render.
 			return array();
