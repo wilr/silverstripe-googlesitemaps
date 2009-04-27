@@ -43,8 +43,9 @@ class GoogleSitemap extends Controller {
 		
 		foreach($this->Pages as $page) {
 			// Only include pages from this host and pages which are not an instance of ErrorPage 
-			if(parse_url($page->AbsoluteLink(), PHP_URL_HOST) == $_SERVER['HTTP_HOST'] && !($page instanceof ErrorPage)) {
-
+			// We prefix $_SERVER['HTTP_HOST'] with 'http://' so that parse_url to help parse_url identify the host name component; we could use another protocol (like 
+			// 'ftp://' as the prefix and the code would work the same. 
+			if(parse_url($page->AbsoluteLink(), PHP_URL_HOST) == parse_url('http://' . $_SERVER['HTTP_HOST'], PHP_URL_HOST) && !($page instanceof ErrorPage)) {
 				// If the page has been set to 0 priority, we set a flag so it won't be included
 				if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
 					// The one field that isn't easy to deal with in the template is
