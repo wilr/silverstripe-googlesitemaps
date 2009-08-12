@@ -16,8 +16,7 @@
  * 
  * @see http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=34609
  * 
- * @package sapphire
- * @subpackage misc
+ * @package googlesitemaps
  */
 class GoogleSitemap extends Controller {
 	
