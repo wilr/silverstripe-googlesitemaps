@@ -35,52 +35,65 @@ class GoogleSitemap extends Controller {
 	 */
 	protected static $google_notification_enabled = false;
 	
+	/**
+	 * @var boolean
+	 */
+	protected static $use_show_in_search = true;
+	
 	public function Items() {
-		$this->Pages = Versioned::get_by_stage('SiteTree', 'Live');
+		$filter = '';
+		
+		if(self::$use_show_in_search) {
+			$filter = '`ShowInSearch` = 1';
+		}
+		
+		$this->Pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
 
 		$newPages = new DataObjectSet();
-		
-		foreach($this->Pages as $page) {
-			// Only include pages from this host and pages which are not an instance of ErrorPage 
-			// We prefix $_SERVER['HTTP_HOST'] with 'http://' so that parse_url to help parse_url identify the host name component; we could use another protocol (like 
-			// 'ftp://' as the prefix and the code would work the same. 
-			if(parse_url($page->AbsoluteLink(), PHP_URL_HOST) == parse_url('http://' . $_SERVER['HTTP_HOST'], PHP_URL_HOST) && !($page instanceof ErrorPage)) {
-				// If the page has been set to 0 priority, we set a flag so it won't be included
-				if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
-					// The one field that isn't easy to deal with in the template is
-					// Change frequency, so we set that here.
-					$properties = $page->toMap();
-					$created = new SSDatetime();
-					$created->value = $properties['Created'];
-					$now = new SSDatetime();
-					$now->value = date('Y-m-d H:i:s');
-					$versions = $properties['Version'];
-					$timediff = $now->format('U') - $created->format('U');
+		if($this->Pages) {
+			foreach($this->Pages as $page) {
+				// Only include pages from this host and pages which are not an instance of ErrorPage 
+				// We prefix $_SERVER['HTTP_HOST'] with 'http://' so that parse_url to help parse_url identify the host name component; we could use another protocol (like 
+				// 'ftp://' as the prefix and the code would work the same. 
+				if(parse_url($page->AbsoluteLink(), PHP_URL_HOST) == parse_url('http://' . $_SERVER['HTTP_HOST'], PHP_URL_HOST) && !($page instanceof ErrorPage)) {
+
+					// If the page has been set to 0 priority, we set a flag so it won't be included
+					if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
+						// The one field that isn't easy to deal with in the template is
+						// Change frequency, so we set that here.
+						$properties = $page->toMap();
+						$created = new SSDatetime();
+						$created->value = $properties['Created'];
+						$now = new SSDatetime();
+						$now->value = date('Y-m-d H:i:s');
+						$versions = $properties['Version'];
+						$timediff = $now->format('U') - $created->format('U');
 			
-					// Check how many revisions have been made over the lifetime of the
-					// Page for a rough estimate of it's changing frequency.
+						// Check how many revisions have been made over the lifetime of the
+						// Page for a rough estimate of it's changing frequency.
 			
-					$period = $timediff / ($versions + 1);
+						$period = $timediff / ($versions + 1);
 			
-					if($period > 60*60*24*365) { // > 1 year
-						$page->ChangeFreq='yearly';
-					} elseif($period > 60*60*24*30) { // > ~1 month
-						$page->ChangeFreq='monthly';
-					} elseif($period > 60*60*24*7) { // > 1 week
-						$page->ChangeFreq='weekly';
-					} elseif($period > 60*60*24) { // > 1 day
-						$page->ChangeFreq='daily';
-					} elseif($period > 60*60) { // > 1 hour
-						$page->ChangeFreq='hourly';
-					} else { // < 1 hour
-						$page->ChangeFreq='always';
-					}
+						if($period > 60*60*24*365) { // > 1 year
+							$page->ChangeFreq='yearly';
+						} elseif($period > 60*60*24*30) { // > ~1 month
+							$page->ChangeFreq='monthly';
+						} elseif($period > 60*60*24*7) { // > 1 week
+							$page->ChangeFreq='weekly';
+						} elseif($period > 60*60*24) { // > 1 day
+							$page->ChangeFreq='daily';
+						} elseif($period > 60*60) { // > 1 hour
+							$page->ChangeFreq='hourly';
+						} else { // < 1 hour
+							$page->ChangeFreq='always';
+						}
 				
-					$newPages->push($page);
+						$newPages->push($page);
+					}
 				}
 			}
+			return $newPages;
 		}
-		return $newPages;
 	}
 	
 	/**
