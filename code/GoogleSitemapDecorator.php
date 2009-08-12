@@ -61,11 +61,11 @@ class GoogleSitemapDecorator extends SiteTreeDecorator {
 	}
 	
 	function onAfterPublish() {
-		GoogleSiteMap::ping();
+		GoogleSitemap::ping();
 	}
 	
 	function onAfterUnpublish() {
-		GoogleSiteMap::ping();
+		GoogleSitemap::ping();
 	}
 	
 	/**
