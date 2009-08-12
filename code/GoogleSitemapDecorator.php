@@ -11,7 +11,7 @@ class GoogleSitemapDecorator extends SiteTreeDecorator {
 	function extraStatics() {
 		return array(
 			'db' => array(
-				"Priority" => "Float",
+				"Priority" => "Varchar(5)",
 			)
 		);
 	}
@@ -72,7 +72,7 @@ class GoogleSitemapDecorator extends SiteTreeDecorator {
 	 * The default value of the priority field depends on the depth of the page in
 	 * the site tree, so it must be calculated dynamically.
 	 */
-	function getPriority() {		
+	function getPriority() {
 		if(!$this->owner->getField('Priority')) {
 			$parentStack = $this->owner->parentStack();
 			$numParents = is_array($parentStack) ? count($parentStack) - 1: 0;
