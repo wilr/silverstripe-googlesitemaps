@@ -62,9 +62,9 @@ class GoogleSitemap extends Controller {
 						// The one field that isn't easy to deal with in the template is
 						// Change frequency, so we set that here.
 						$properties = $page->toMap();
-						$created = new SS_Datetime();
+						$created = new SSDatetime();
 						$created->value = $properties['Created'];
-						$now = new SS_Datetime();
+						$now = new SSDatetime();
 						$now->value = date('Y-m-d H:i:s');
 						$versions = $properties['Version'];
 						$timediff = $now->format('U') - $created->format('U');
