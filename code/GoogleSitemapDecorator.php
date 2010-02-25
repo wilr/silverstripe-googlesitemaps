@@ -45,7 +45,7 @@ class GoogleSitemapDecorator extends SiteTreeDecorator {
 							'SiteTree.METANOTEPRIORITY', 
 							"Manually specify a Google Sitemaps priority for this page (%s)"
 						),
-						'<a href="https://www.google.com/webmasters/tools/docs/en/protocol.html#prioritydef">?</a>'
+						'<a href="http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=71936#prioritize" target="_blank">?</a>'
 					) .
 					"</p>"
 				), 
