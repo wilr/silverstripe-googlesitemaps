@@ -44,7 +44,7 @@ class GoogleSitemap extends Controller {
 		$filter = '';
 		
 		if(self::$use_show_in_search) {
-			$filter = '`ShowInSearch` = 1';
+			$filter = 'ShowInSearch = 1';
 		}
 		
 		$this->Pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
