@@ -43,8 +43,9 @@ class GoogleSitemap extends Controller {
 	public function Items() {
 		$filter = '';
 		
+		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
 		if(self::$use_show_in_search) {
-			$filter = 'ShowInSearch = 1';
+			$filter = "{$bt}ShowInSearch{$bt} = 1";
 		}
 		
 		$this->Pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
