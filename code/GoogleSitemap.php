@@ -145,9 +145,8 @@ class GoogleSitemap extends Controller {
 			// But we want to still render.
 			return array();
 		} else {
-			return new HTTPResponse('Not allowed', 405);
+			return new SS_HTTPResponse('Not allowed', 405);
 		}
-
 	}
 	
 	public static function enable() {
