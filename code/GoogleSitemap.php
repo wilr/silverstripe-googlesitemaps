@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Initial implementation of Sitemap support.
  * GoogleSitemap should handle requests to 'sitemap.xml'
@@ -18,6 +19,7 @@
  * 
  * @package googlesitemaps
  */
+
 class GoogleSitemap extends Controller {
 	
 	/**
@@ -60,14 +62,12 @@ class GoogleSitemap extends Controller {
 
 					// If the page has been set to 0 priority, we set a flag so it won't be included
 					if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
-						// The one field that isn't easy to deal with in the template is
-						// Change frequency, so we set that here.
-						$properties = $page->toMap();
-						$created = new SS_Datetime();
-						$created->value = $properties['Created'];
+
+						$created = $page->dbObject('Created');
+						
 						$now = new SS_Datetime();
 						$now->value = date('Y-m-d H:i:s');
-						$versions = $properties['Version'];
+						$versions = $page->Version;
 						$timediff = $now->format('U') - $created->format('U');
 			
 						// Check how many revisions have been made over the lifetime of the

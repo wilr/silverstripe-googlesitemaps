@@ -84,5 +84,3 @@ class GoogleSitemapDecorator extends SiteTreeDecorator {
 		}
 	}
 }
-
-?>
