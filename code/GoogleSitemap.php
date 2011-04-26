@@ -11,7 +11,7 @@
  * sitemap whenever the GoogleBot visits your website.
  * 
  * Enabling notification of Google after every publish (in your _config.php):
- * <example
+ * <example>
  * GoogleSitemap::enable_google_notificaton();
  * </example>
  * 
