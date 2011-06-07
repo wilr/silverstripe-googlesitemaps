@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Initial implementation of Sitemap support.
  * GoogleSitemap should handle requests to 'sitemap.xml'
@@ -11,7 +10,7 @@
  * sitemap whenever the GoogleBot visits your website.
  * 
  * Enabling notification of Google after every publish (in your _config.php):
- * <example>
+ * <example
  * GoogleSitemap::enable_google_notificaton();
  * </example>
  * 
@@ -19,7 +18,6 @@
  * 
  * @package googlesitemaps
  */
-
 class GoogleSitemap extends Controller {
 	
 	/**
@@ -41,8 +39,70 @@ class GoogleSitemap extends Controller {
 	 * @var boolean
 	 */
 	protected static $use_show_in_search = true;
-	
-	public function Items() {
+        
+        /**
+         * List of DataObjects to show in sitemap.xml
+         *
+         * @var array
+         */
+        public static $google_sitemap_dataobjects = array();
+        
+        /**
+         * List of DataObjects change frequency
+         *
+         * @var array
+         */
+        public static $google_sitemap_dataobjects_changefreq = array();
+
+
+        /**
+         * Decorates the given DataObject with GoogleSitemapDecorator and pushes
+         * the class name to the registered DataObjects.
+         * Note that all registered DataObjects need the method AbsoluteLink().
+         *
+         * @param string $className name of DataObject to register
+         */
+        public static function registerDataObject($className, $changeFreq = 'monthly') {
+            if (!self::isRegistered($className)) {
+                Object::add_extension($className, 'GoogleSitemapDecorator');
+                self::$google_sitemap_dataobjects[] = $className;
+                self::$google_sitemap_dataobjects_changefreq[] = $changeFreq;
+            }
+        }
+        
+        /**
+         * Checks whether the given class name is already registered or not.
+         *
+         * @param string $className Name of DataObject to check
+         * 
+         * @return bool
+         */
+        public static function isRegistered($className) {
+            return in_array($className, self::$google_sitemap_dataobjects);
+        }
+        
+        /**
+         * Adds DataObjects to the existing DataObjectSet with pages from the
+         * site tree
+         * 
+         * @param DataObjectSet $newPages 
+         * 
+         * @return void 
+         */
+        protected function addRegisteredDataObjects($newPages) {
+            foreach (self::$google_sitemap_dataobjects as $index => $className) {
+                $dataObjectSet = DataObject::get($className);
+                foreach ($dataObjectSet as $dataObject) {
+                    if ($dataObject->canView() && (!isset($dataObject->Priority) || $dataObject->Priority > 0)) {
+                        $dataObject->ChangeFreq = self::$google_sitemap_dataobjects_changefreq[$index];
+                        $newPages->push($dataObject);
+                    }
+                }
+            }
+        }
+
+
+        public function Items() {
 		$filter = '';
 		
 		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
@@ -62,12 +122,14 @@ class GoogleSitemap extends Controller {
 
 					// If the page has been set to 0 priority, we set a flag so it won't be included
 					if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
-
-						$created = $page->dbObject('Created');
-						
+						// The one field that isn't easy to deal with in the template is
+						// Change frequency, so we set that here.
+						$properties = $page->toMap();
+						$created = new SS_Datetime();
+						$created->value = $properties['Created'];
 						$now = new SS_Datetime();
 						$now->value = date('Y-m-d H:i:s');
-						$versions = $page->Version;
+						$versions = $properties['Version'];
 						$timediff = $now->format('U') - $created->format('U');
 			
 						// Check how many revisions have been made over the lifetime of the
@@ -93,6 +155,7 @@ class GoogleSitemap extends Controller {
 					}
 				}
 			}
+                        $this->addRegisteredDataObjects($newPages);
 			return $newPages;
 		}
 	}
