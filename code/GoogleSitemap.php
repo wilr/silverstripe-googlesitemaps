@@ -67,12 +67,16 @@ class GoogleSitemap extends Controller {
 	 * and pushes the class name to the registered DataObjects.
 	 * Note that all registered DataObjects need the method AbsoluteLink().
 	 *
-	 * @param string $className name of DataObject to register
-	 * @param string $changeFreq
+	 * @param string $className  name of DataObject to register
+	 * @param string $changeFreq how often is this DataObject updated?
+         *                           Possible values:
+         *                           always, hourly, daily, weekly, monthly, yearly, never
+         * @param string $priority   How important is this DataObject in comparison to other urls?
+         *                           Possible values: 0.1, 0.2 ... , 0.9, 1.0
 	 *
 	 * @return void
 	 */
-	public static function register_dataobject($className, $changeFreq = 'monthly', $priority = 0.6) {
+	public static function register_dataobject($className, $changeFreq = 'monthly', $priority = '0.6') {
 		if (!self::is_registered($className)) {
 			Object::add_extension($className, 'GoogleSitemapDecorator');
 			self::$google_sitemap_dataobjects[] = $className;
