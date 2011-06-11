@@ -54,8 +54,15 @@ class GoogleSitemap extends Controller {
 	 * @var array
 	 */
 	public static $google_sitemap_dataobjects_changefreq = array();
+        
+        /**
+         * List of DataObjects priority
+         * 
+         * @var array 
+         */
+        public static $google_sitemap_dataobjects_priority = array();
 
-	/**
+        /**
 	 * Decorates the given DataObject with {@link GoogleSitemapDecorator}
 	 * and pushes the class name to the registered DataObjects.
 	 * Note that all registered DataObjects need the method AbsoluteLink().
@@ -65,11 +72,16 @@ class GoogleSitemap extends Controller {
 	 *
 	 * @return void
 	 */
-	public static function register_dataobject($className, $changeFreq = 'monthly') {
+	public static function register_dataobject($className, $changeFreq = 'monthly', $priority = 0.6) {
 		if (!self::is_registered($className)) {
 			Object::add_extension($className, 'GoogleSitemapDecorator');
 			self::$google_sitemap_dataobjects[] = $className;
-			self::$google_sitemap_dataobjects_changefreq[] = $changeFreq;
+                        if ($changeFreq === null) {
+                            self::$google_sitemap_dataobjects_changefreq[] = "monthly";
+                        } else {
+                            self::$google_sitemap_dataobjects_changefreq[] = $changeFreq;
+                        }
+                        self::$google_sitemap_dataobjects_priority[] = $priority;
 		}
 	}
 
@@ -100,11 +112,11 @@ class GoogleSitemap extends Controller {
 			
 			if($dataObjectSet) {
 				foreach($dataObjectSet as $dataObject) {	
-					if($dataObject->canView() && (!isset($dataObject->Priority) || $dataObject->Priority > 0)) {
+					if($dataObject->canView()) {
 						$dataObject->ChangeFreq = self::$google_sitemap_dataobjects_changefreq[$index];
 						
 						if(!isset($dataObject->Priority)) {
-							$dataObject->Priority = 1.0;
+							$dataObject->Priority = self::$google_sitemap_dataobjects_priority[$index];
 						}
 						
 						$output->push($dataObject);
