@@ -6,7 +6,16 @@
  * 
  * @package googlesitemaps
  */
-class GoogleSitemapDecorator extends SiteTreeDecorator {
+class GoogleSitemapDecorator extends DataObjectDecorator {
+
+	
+}
+
+/**
+ * @package googlesitemaps
+ */
+
+class GoogleSitemapSiteTreeDecorator extends SiteTreeDecorator {
 	
 	function extraStatics() {
 		return array(
