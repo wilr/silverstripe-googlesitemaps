@@ -166,48 +166,7 @@ class GoogleSitemap extends Controller {
 					// If the page has been set to 0 priority, we set a flag so 
 					// it won't be included
 					if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
-						// The one field that isn't easy to deal with in the template is
-						// Change frequency, so we set that here.
-
-						$date = date('Y-m-d H:i:s');
-						
-						$prop = $page->toMap();
-						$created = new SS_Datetime();
-						$created->value = (isset($prop['Created'])) ? $prop['Created'] : $date;
-						
-						$now = new SS_Datetime();
-						$now->value = $date;
-						$versions = (isset($prop['Version'])) ? $prop['Version'] : 1;
-						
-						$timediff = $now->format('U') - $created->format('U');
-
-						// Check how many revisions have been made over the lifetime of the
-						// Page for a rough estimate of it's changing frequency.
-						$period = $timediff / ($versions + 1);
-
-						if($period > 60*60*24*365) { 
-							// > 1 year
-							$page->ChangeFreq = 'yearly';
-						} 
-						elseif($period > 60*60*24*30) { 
-							$page->ChangeFreq = 'monthly';
-						} 
-						elseif($period > 60*60*24*7) { 
-							// > 1 week
-							$page->ChangeFreq = 'weekly';
-						} 
-						elseif($period > 60*60*24) { 
-							// > 1 day
-							$page->ChangeFreq = 'daily';
-						} 
-						elseif($period > 60*60) { 
-							// > 1 hour
-							$page->ChangeFreq = 'hourly';
-						} else { 
-							// < 1 hour
-							$page->ChangeFreq = 'always';
-						}
-
+						$page->setChangeFrequency();
 						$newPages->push($page);
 					}
 				}
