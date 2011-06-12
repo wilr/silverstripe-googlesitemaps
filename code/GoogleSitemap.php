@@ -10,7 +10,7 @@
  * sitemap whenever the GoogleBot visits your website.
  * 
  * Enabling notification of Google after every publish (in your _config.php):
- *
+
  * <example>
  * GoogleSitemap::enable_google_notificaton();
  * </example>
@@ -54,22 +54,38 @@ class GoogleSitemap extends Controller {
 	 * @var array
 	 */
 	public static $google_sitemap_dataobjects_changefreq = array();
+        
+        /**
+         * List of DataObjects priority
+         * 
+         * @var array 
+         */
+        public static $google_sitemap_dataobjects_priority = array();
 
-	/**
+        /**
 	 * Decorates the given DataObject with {@link GoogleSitemapDecorator}
 	 * and pushes the class name to the registered DataObjects.
 	 * Note that all registered DataObjects need the method AbsoluteLink().
 	 *
-	 * @param string $className name of DataObject to register
-	 * @param string $changeFreq
+	 * @param string $className  name of DataObject to register
+	 * @param string $changeFreq how often is this DataObject updated?
+         *                           Possible values:
+         *                           always, hourly, daily, weekly, monthly, yearly, never
+         * @param string $priority   How important is this DataObject in comparison to other urls?
+         *                           Possible values: 0.1, 0.2 ... , 0.9, 1.0
 	 *
 	 * @return void
 	 */
-	public static function register_dataobject($className, $changeFreq = 'monthly') {
+	public static function register_dataobject($className, $changeFreq = 'monthly', $priority = '0.6') {
 		if (!self::is_registered($className)) {
 			Object::add_extension($className, 'GoogleSitemapDecorator');
 			self::$google_sitemap_dataobjects[] = $className;
-			self::$google_sitemap_dataobjects_changefreq[] = $changeFreq;
+                        if ($changeFreq === null) {
+                            self::$google_sitemap_dataobjects_changefreq[] = "monthly";
+                        } else {
+                            self::$google_sitemap_dataobjects_changefreq[] = $changeFreq;
+                        }
+                        self::$google_sitemap_dataobjects_priority[] = $priority;
 		}
 	}
 
@@ -88,8 +104,6 @@ class GoogleSitemap extends Controller {
 	 * Adds DataObjects to the existing DataObjectSet with pages from the
 	 * site tree
 	 * 
-	 * @param DataObjectSet $newPages 
-	 * 
 	 * @return DataObjectSet 
 	 */
 	protected function addRegisteredDataObjects() {
@@ -100,11 +114,11 @@ class GoogleSitemap extends Controller {
 			
 			if($dataObjectSet) {
 				foreach($dataObjectSet as $dataObject) {	
-					if($dataObject->canView() && (!isset($dataObject->Priority) || $dataObject->Priority > 0)) {
+					if($dataObject->canView()) {
 						$dataObject->ChangeFreq = self::$google_sitemap_dataobjects_changefreq[$index];
 						
 						if(!isset($dataObject->Priority)) {
-							$dataObject->Priority = 1.0;
+							$dataObject->Priority = self::$google_sitemap_dataobjects_priority[$index];
 						}
 						
 						$output->push($dataObject);
@@ -150,51 +164,12 @@ class GoogleSitemap extends Controller {
 					// If the page has been set to 0 priority, we set a flag so 
 					// it won't be included
 					if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
-						// The one field that isn't easy to deal with in the template is
-						// Change frequency, so we set that here.
-						$date = date('Y-m-d H:i:s');
-						
-						$prop = $page->toMap();
-						$created = new SS_Datetime();
-						$created->value = (isset($prop['Created'])) ? $prop['Created'] : $date;
-						
-						$now = new SS_Datetime();
-						$now->value = $date;
-						$versions = (isset($prop['Version'])) ? $prop['Version'] : 1;
-						
-						$timediff = $now->format('U') - $created->format('U');
-
-						// Check how many revisions have been made over the lifetime of the
-						// Page for a rough estimate of it's changing frequency.
-						$period = $timediff / ($versions + 1);
-
-						if($period > 60*60*24*365) { 
-							// > 1 year
-							$page->ChangeFreq = 'yearly';
-						} 
-						elseif($period > 60*60*24*30) { 
-							$page->ChangeFreq = 'monthly';
-						} 
-						elseif($period > 60*60*24*7) { 
-							// > 1 week
-							$page->ChangeFreq = 'weekly';
-						} 
-						elseif($period > 60*60*24) { 
-							// > 1 day
-							$page->ChangeFreq = 'daily';
-						} 
-						elseif($period > 60*60) { 
-							// > 1 hour
-							$page->ChangeFreq = 'hourly';
-						} else { 
-							// < 1 hour
-							$page->ChangeFreq = 'always';
-						}
-
+						$page->setChangeFrequency();
 						$newPages->push($page);
 					}
 				}
 			}
+
 		}
 		
 		$newPages->merge($this->addRegisteredDataObjects());
