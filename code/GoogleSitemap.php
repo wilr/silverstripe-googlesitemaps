@@ -104,8 +104,6 @@ class GoogleSitemap extends Controller {
 	 * Adds DataObjects to the existing DataObjectSet with pages from the
 	 * site tree
 	 * 
-	 * @param DataObjectSet $newPages 
-	 * 
 	 * @return DataObjectSet 
 	 */
 	protected function addRegisteredDataObjects() {
