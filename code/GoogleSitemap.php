@@ -259,4 +259,5 @@ class GoogleSitemap extends Controller {
 	public static function disable() {
 		self::$enabled = false;
 	}
+        
 }
