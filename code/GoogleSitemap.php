@@ -27,11 +27,6 @@ class GoogleSitemap extends Controller {
 	protected static $enabled = true;
 	
 	/**
-	 * @var DataObjectSet
-	 */
-	protected $Pages;
-	
-	/**
 	 * @var boolean
 	 */
 	protected static $google_notification_enabled = false;
@@ -148,12 +143,12 @@ class GoogleSitemap extends Controller {
 			$filter = "{$bt}ShowInSearch{$bt} = 1";
 		}
 
-		$this->Pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
-
+		$pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
+		
 		$newPages = new DataObjectSet();
 		
-		if($this->Pages) {
-			foreach($this->Pages as $page) {
+		if($pages) {
+			foreach($pages as $page) {
 				// Only include pages from this host and pages which are not an 
 				// instance of ErrorPage. We prefix $_SERVER['HTTP_HOST'] with 
 				// 'http://' so that parse_url to help parse_url identify the 
@@ -182,10 +177,14 @@ class GoogleSitemap extends Controller {
 	
 	/**
 	 * Notifies Google about changes to your sitemap.
+	 *
 	 * Triggered automatically on every publish/unpublish of a page.
 	 * This behaviour is disabled by default, enable with:
+	 *
+	 * <code>
 	 * GoogleSitemap::enable_google_notificaton();
-	 * 
+	 * </code>
+	 *
 	 * If the site is in "dev-mode", no ping will be sent regardless wether
 	 * the Google notification is enabled.
 	 * 
@@ -241,7 +240,7 @@ class GoogleSitemap extends Controller {
 			// But we want to still render.
 			return array();
 		} else {
-			return new SS_HTTPResponse('Not allowed', 405);
+			return new SS_HTTPResponse('Page not found', 404);
 		}
 	}
 	
@@ -261,5 +260,5 @@ class GoogleSitemap extends Controller {
 	 */
 	public static function disable() {
 		self::$enabled = false;
-	}
+	}     
 }
