@@ -1,9 +1,7 @@
 Page:
     Page1:
+        Title: Testpage1
+        Priority: 0.2
     Page2:
-    Page3:
+        Title: Testpage2
         
-DataObject:
-    DataObject1:
-    DataObject2:
-    DataObject3:
