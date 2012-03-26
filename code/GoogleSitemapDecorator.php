@@ -6,14 +6,14 @@
  * 
  * @package googlesitemaps
  */
-class GoogleSitemapDecorator extends DataObjectDecorator {
+class GoogleSitemapDecorator extends DataExtension {
     
 }
 
 /**
  * @package googlesitemaps
  */
-class GoogleSitemapSiteTreeDecorator extends SiteTreeDecorator {
+class GoogleSitemapSiteTreeDecorator extends DataExtension {
 
 	function extraStatics() {
 		return array(
@@ -23,7 +23,7 @@ class GoogleSitemapSiteTreeDecorator extends SiteTreeDecorator {
 		);
 	}
 
-	function updateCMSFields(&$fields) {
+	function updateSettingsFields(&$fields) {
 		$prorities = array(
 			'' => _t('SiteTree.PRIORITYAUTOSET', 'Auto-set based on page depth'),
 			'-1' => _t('SiteTree.PRIORITYNOTINDEXED', "Not indexed"), // We set this to -ve one because a blank value implies auto-generation of Priority
@@ -39,7 +39,7 @@ class GoogleSitemapSiteTreeDecorator extends SiteTreeDecorator {
 			'0.1' => '10 - ' . _t('SiteTree.PRIORITYLEASTIMPORTANT', "Least important")
 		);
 
-		$tabset = $fields->findOrMakeTab('Root.Content');
+		$tabset = $fields->findOrMakeTab('Root.Settings');
 		
 		$message = "<p>";
 		$message .= sprintf(_t('SiteTree.METANOTEPRIORITY', "Manually specify a Google Sitemaps priority for this page (%s)"), 
