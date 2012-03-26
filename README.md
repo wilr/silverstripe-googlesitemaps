@@ -6,7 +6,7 @@
 
 ## Requirements
 
- * SilverStripe 2.4
+ * SilverStripe 3.0
 
 ## Documentation
 
@@ -22,5 +22,5 @@ See http://en.wikipedia.org/wiki/Sitemaps for info on this format
 
 ## Usage Overview
 
-See docs/en/* for more information about configuring the module.
+See docs/en for more information about configuring the module.
 	

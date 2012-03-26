@@ -71,9 +71,8 @@ class GoogleSitemapTest extends FunctionalTest {
 	function testDecoratorAddsFields() {
 		$page = $this->objFromFixture('Page', 'Page1');
 		
-		$fields = $page->getCMSFields();
-		
-		$tab = $fields->fieldByName('Root')->fieldByName('Content')->fieldByName('GoogleSitemap');
+		$fields = $page->getSettingsFields();
+		$tab = $fields->fieldByName('Root')->fieldByName('Settings')->fieldByName('GoogleSitemap');
 		
 		$this->assertInstanceOf('Tab', $tab);
 		$this->assertInstanceOf('DropdownField', $tab->fieldByName('Priority'));

@@ -102,10 +102,10 @@ class GoogleSitemap extends Controller {
 	 * Adds DataObjects to the existing DataObjectSet with pages from the
 	 * site tree
 	 * 
-	 * @return DataObjectSet 
+	 * @return ArrayList 
 	 */
 	protected function addRegisteredDataObjects() {
-		$output = new DataObjectSet();
+		$output = new ArrayList();
 		
 		foreach(self::$google_sitemap_dataobjects as $index => $className) {
 			$dataObjectSet = DataObject::get($className);
@@ -145,7 +145,7 @@ class GoogleSitemap extends Controller {
 
 		$pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
 		
-		$newPages = new DataObjectSet();
+		$newPages = new ArrayList();
 		
 		if($pages) {
 			foreach($pages as $page) {
@@ -235,6 +235,7 @@ class GoogleSitemap extends Controller {
 	function index($url) {
 		if(self::$enabled) {
 			SSViewer::set_source_file_comments(false);
+			
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 
 			// But we want to still render.
