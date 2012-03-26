@@ -2,7 +2,7 @@
 
 ## Maintainer Contact
 
- * Will Rossiter (Nickname: wrossiter, willr) <will@silverstripe.com>
+ * Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
 
 ## Requirements
 
