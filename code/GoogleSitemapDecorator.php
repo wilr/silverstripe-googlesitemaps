@@ -15,7 +15,7 @@ class GoogleSitemapDecorator extends DataExtension {
  */
 class GoogleSitemapSiteTreeDecorator extends DataExtension {
 
-	function extraStatics() {
+	function extraStatics($class = null, $extension = null) {
 		return array(
 			'db' => array(
 				"Priority" => "Varchar(5)",
