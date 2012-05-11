@@ -143,7 +143,7 @@ class GoogleSitemap extends Controller {
 			$filter = "{$bt}ShowInSearch{$bt} = 1";
 		}
 
-		$pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
+		$pages = class_exists('SiteTree') ? Versioned::get_by_stage('SiteTree', 'Live', $filter) : false;
 		
 		$newPages = new ArrayList();
 		
