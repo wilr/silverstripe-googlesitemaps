@@ -1,10 +1,3 @@
-Page:
-    Page1:
-        Title: Testpage1
-        Priority: 0.2
-    Page2:
-        Title: Testpage2
-        
 GoogleSitemapTest_DataObject:
     DataObjectTest1:
         Priority: 0.4
@@ -14,7 +7,7 @@ GoogleSitemapTest_DataObject:
 GoogleSitemapTest_OtherDataObject:
     OtherDataObjectTest2:
         Priority: 0.3
-    
+
 GoogleSitemapTest_UnviewableDataObject:
     Unviewable1:
         Priority: 0.4

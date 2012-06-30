@@ -22,6 +22,13 @@
 class GoogleSitemap extends Controller {
 	
 	/**
+	 * @var array
+	 */
+	public static $allowed_actions = array(
+		'index'		
+	);
+
+	/**
 	 * @var boolean
 	 */
 	protected static $enabled = true;

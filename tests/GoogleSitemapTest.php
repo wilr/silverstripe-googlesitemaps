@@ -2,6 +2,7 @@
 
 /**
  * @package googlesitemaps
+ * @subpackage tests
  */
 class GoogleSitemapTest extends FunctionalTest {
 
@@ -13,28 +14,56 @@ class GoogleSitemapTest extends FunctionalTest {
 		'GoogleSitemapTest_UnviewableDataObject'
 	);
 
+	function setUp() {
+		parent::setUp();
+
+		if(class_exists('Page')) {
+			$this->loadFixture('googlesitemaps/tests/GoogleSitemapPageTest.yml');
+		}
+	}
+
 	function testItems() {
+		$sitemap = new GoogleSitemap();
+
+		// register a DataObject and see if its aded to the sitemap
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject", '');
+
+		$this->assertEquals(2, $sitemap->Items()->Count());
+
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_OtherDataObject");
+		$this->assertEquals(3, $sitemap->Items()->Count());
+
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_UnviewableDataObject");
+		$this->assertEquals(3, $sitemap->Items()->Count());
+	}
+
+	function testItemsWithPages() {
+		if(!class_exists('Page')) {
+			$this->markTestIncomplete('No cms module installed, page related test skipped');
+		}
+
+		$sitemap = new GoogleSitemap();
+
 		$page = $this->objFromFixture('Page', 'Page1');
 		$page->publish('Stage', 'Live');
 		$page->flushCache();
-		
+	
 		$page2 = $this->objFromFixture('Page', 'Page2');
 		$page2->publish('Stage', 'Live');
 		$page2->flushCache();
 
-		$sitemap = new GoogleSitemap();
 		$this->assertDOSEquals(array(
 			array('Title' => 'Testpage1'),
 			array('Title' => 'Testpage2')
 		), $sitemap->Items(), "There should be 2 pages in the sitemap after publishing");
-		
+	
 		// check if we make a page readonly that it is hidden
 		$page2->CanViewType = 'LoggedInUsers';
 		$page2->write();	
 		$page2->publish('Stage', 'Live');
-		
+	
 		$this->session()->inst_set('loggedInAs', null);
-		
+	
 		$this->assertDOSEquals(array(
 			array('Title' => 'Testpage1')
 		), $sitemap->Items(), "There should be only 1 page, other is logged in only");
@@ -59,6 +88,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		GoogleSitemap::enable();
 		
 		$response = $this->get('sitemap.xml');
+
 		$this->assertEquals(200, $response->getStatusCode(), 'Sitemap returns a 200 success when enabled');
 		$this->assertEquals('application/xml; charset="utf-8"', $response->getHeader('Content-Type'));
 		
@@ -69,19 +99,27 @@ class GoogleSitemapTest extends FunctionalTest {
 	}
 	
 	function testDecoratorAddsFields() {
+		if(!class_exists("Page")) {
+			$this->markTestIncomplete('No cms module installed, page related test skipped');
+		}
+
 		$page = $this->objFromFixture('Page', 'Page1');
-		
+	
 		$fields = $page->getSettingsFields();
 		$tab = $fields->fieldByName('Root')->fieldByName('Settings')->fieldByName('GoogleSitemap');
-		
+	
 		$this->assertInstanceOf('Tab', $tab);
 		$this->assertInstanceOf('DropdownField', $tab->fieldByName('Priority'));
 		$this->assertInstanceOf('LiteralField', $tab->fieldByName('GoogleSitemapIntro'));
 	}
 	
 	function testGetPriority() {
-		$page = $this->objFromFixture('Page', 'Page1');
+		if(!class_exists("Page")) {
+			$this->markTestIncomplete('No cms module installed, page related test skipped');
+		}
 		
+		$page = $this->objFromFixture('Page', 'Page1');
+
 		// invalid field doesn't break google
 		$page->Priority = 'foo';
 		$this->assertEquals(0.5, $page->getPriority());
@@ -94,6 +132,7 @@ class GoogleSitemapTest extends FunctionalTest {
 
 /**
  * @package googlesitemaps
+ * @subpackage tests
  */
 class GoogleSitemapTest_DataObject extends DataObject implements TestOnly {
 	
@@ -112,6 +151,7 @@ class GoogleSitemapTest_DataObject extends DataObject implements TestOnly {
 
 /**
  * @package googlesitemaps
+ * @subpackage tests
  */
 class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly {
 
@@ -130,6 +170,7 @@ class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly {
 
 /**
  * @package googlesitemaps
+ * @subpackage tests
  */
 class GoogleSitemapTest_UnviewableDataObject extends DataObject implements TestOnly {
 
