@@ -1,6 +1,12 @@
 <?php
 /**
- * Initial implementation of Sitemap support.
+ * Sitemaps are a way to tell Google about pages on your site that they might 
+ * not otherwise discover. In its simplest terms, a XML Sitemap—usually called 
+ * Sitemap, with a capital S—is a list of the pages on your website. Creating 
+ * and submitting a Sitemap helps make sure that Google knows about all the 
+ * pages on your site, including URLs that may not be discoverable by Google's 
+ * normal crawling process.
+ * 
  * GoogleSitemap should handle requests to 'sitemap.xml'
  * the other two classes are used to render the sitemap.
  * 
@@ -44,25 +50,12 @@ class GoogleSitemap extends Controller {
 	protected static $use_show_in_search = true;
 
 	/**
-	 * List of DataObjects to show in sitemap.xml
+	 * List of DataObject class names to include. As well as the change 
+	 * frequency and priority of each class.
 	 *
 	 * @var array
 	 */
-	public static $google_sitemap_dataobjects = array();
-
-	/**
-	 * List of DataObjects change frequency
-	 *
-	 * @var array
-	 */
-	public static $google_sitemap_dataobjects_changefreq = array();
-        
-	/**
-	 * List of DataObjects priority
-	 * 
-	 * @var array 
-	 */
-	public static $google_sitemap_dataobjects_priority = array();
+	private static $dataobjects = array();
 
 	/**
 	 * Decorates the given DataObject with {@link GoogleSitemapDecorator}
@@ -82,15 +75,10 @@ class GoogleSitemap extends Controller {
 		if (!self::is_registered($className)) {
 			Object::add_extension($className, 'GoogleSitemapDecorator');
 			
-			self::$google_sitemap_dataobjects[] = $className;
-			
-			if (!$changeFreq) {
-				self::$google_sitemap_dataobjects_changefreq[] = "monthly";
-			} else {
-				self::$google_sitemap_dataobjects_changefreq[] = $changeFreq;
-			}
-			
-			self::$google_sitemap_dataobjects_priority[] = $priority;
+			self::$dataobjects[$className] = array(
+				'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
+				'priority' => ($priority) ? $priority : '0.6'
+			);
 		}
 	}
 
@@ -102,31 +90,31 @@ class GoogleSitemap extends Controller {
 	 * @return bool
 	 */
 	public static function is_registered($className) {
-		return in_array($className, self::$google_sitemap_dataobjects);
+		return isset(self::$dataobjects[$className]);
 	}
 
 	/**
-	 * Adds DataObjects to the existing DataObjectSet with pages from the
-	 * site tree
+	 * Returns a list containing each viewable {@link DataObject} instance of 
+	 * the registered class names.
 	 * 
 	 * @return ArrayList 
 	 */
-	protected function addRegisteredDataObjects() {
+	protected function getDataObjects() {
 		$output = new ArrayList();
 		
-		foreach(self::$google_sitemap_dataobjects as $index => $className) {
-			$dataObjectSet = DataObject::get($className);
+		foreach(self::$dataobjects as $class => $config) {
+			$instances = new DataList($class);
 			
-			if($dataObjectSet) {
-				foreach($dataObjectSet as $dataObject) {	
-					if($dataObject->canView()) {
-						$dataObject->ChangeFreq = self::$google_sitemap_dataobjects_changefreq[$index];
+			if($instances) {
+				foreach($instances as $obj) {	
+					if($obj->canView()) {
+						$obj->ChangeFreq = $config['frequency'];
 						
-						if(!isset($dataObject->Priority)) {
-							$dataObject->Priority = self::$google_sitemap_dataobjects_priority[$index];
+						if(!isset($obj->Priority)) {
+							$obj->Priority = $config['priority'];
 						}
 						
-						$output->push($dataObject);
+						$output->push($obj);
 					}
 				}
 			}
@@ -136,76 +124,77 @@ class GoogleSitemap extends Controller {
 	}
 
 	/**
-	 * Returns all the links to {@link SiteTree} pages and
-	 * {@link DataObject} urls on the page.
+	 * Returns a list containing each viewable {@link SiteTree} instance. If 
+	 * you wish to exclude a particular class from the sitemap, simply set
+	 * the priority of the class to -1.
 	 *
-	 * @return DataObjectSet
+	 * @return ArrayList
 	 */
-	public function Items() {
-		$filter = '';
+	protected function getPages() {
+		if(!class_exists('SiteTree')) return new ArrayList();
 
-		$bt = defined('DB::USE_ANSI_SQL') ? "\"" : "`";
-		
-		if(self::$use_show_in_search) {
-			$filter = "{$bt}ShowInSearch{$bt} = 1";
-		}
-
-		$pages = class_exists('SiteTree') ? Versioned::get_by_stage('SiteTree', 'Live', $filter) : false;
-		
-		$newPages = new ArrayList();
+		$filter = (self::$use_show_in_search) ? "\"ShowInSearch\" = 1" : "";
+		$pages = Versioned::get_by_stage('SiteTree', 'Live', $filter);
+		$output = new ArrayList();
 		
 		if($pages) {
 			foreach($pages as $page) {
-				// Only include pages from this host and pages which are not an 
-				// instance of ErrorPage. We prefix $_SERVER['HTTP_HOST'] with 
-				// 'http://' so that parse_url to help parse_url identify the 
-				// host name component; we could use another protocol (like ftp
-				// as the prefix and the code would work the same. 
 				$pageHttp = parse_url($page->AbsoluteLink(), PHP_URL_HOST);
 				$hostHttp = parse_url('http://' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
 				
 				if(($pageHttp == $hostHttp) && !($page instanceof ErrorPage)) {
-
-					// If the page has been set to 0 priority, we set a flag so 
-					// it won't be included
 					if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
-						$page->setChangeFrequency();
-						$newPages->push($page);
+						$
+						$output->push($page);
 					}
 				}
 			}
-
 		}
 		
-		$newPages->merge($this->addRegisteredDataObjects());
+		return $output;
+	}
 
-		$this->extend('updateItems', $newPages);
+	/**
+	 * Constructs the list of data to include in the rendered sitemap. Links
+	 * can include pages from the website, dataobjects (such as forum posts)
+	 * as well as custom registered paths.
+	 *
+	 * @return ArrayList
+	 */
+	public function Items() {
+		$output = new ArrayList();
+		$output->merge($this->getPages());
+		$output->merge($this->getDataObjects());
+
+		$this->extend('updateItems', $output);
 		
-		return $newPages;
+		return $output;
 	}
 	
 	/**
-	 * Notifies Google about changes to your sitemap.
-	 *
-	 * Triggered automatically on every publish/unpublish of a page.
-	 * This behaviour is disabled by default, enable with:
+	 * Notifies Google about changes to your sitemap. This behavior is disabled 
+	 * by default, enable with:
 	 *
 	 * <code>
 	 * GoogleSitemap::enable_google_notificaton();
 	 * </code>
 	 *
-	 * If the site is in "dev-mode", no ping will be sent regardless wether
+	 * After notifications have been enabled, every publish / unpublish of a page.
+	 * will notify Google of the update.
+	 * 
+	 * If the site is in development mode no ping will be sent regardless whether
 	 * the Google notification is enabled.
 	 * 
 	 * @return string Response text
 	 */
-	static function ping() {
+	public static function ping() {
 		if(!self::$enabled) return false;
 		
-		//Don't ping if the site has disabled it, or if the site is in dev mode
-		if(!GoogleSitemap::$google_notification_enabled || Director::isDev())
+		// Don't ping if the site has disabled it, or if the site is in dev mode
+		if(!GoogleSitemap::$google_notification_enabled || Director::isDev()) {
 			return;
-			
+		}
+		
 		$location = urlencode(Controller::join_links(
 			Director::absoluteBaseURL(), 
 			'sitemap.xml'
@@ -241,7 +230,7 @@ class GoogleSitemap extends Controller {
 	/**
 	 * Default controller handler for the sitemap.xml file
 	 */
-	function index($url) {
+	public function index($url) {
 		if(self::$enabled) {
 			SSViewer::set_source_file_comments(false);
 			
@@ -255,7 +244,8 @@ class GoogleSitemap extends Controller {
 	}
 	
 	/**
-	 * Enable the sitemap.xml file
+	 * Enable Google Sitemap support. Requests to the sitemap.xml route will
+	 * result in an XML sitemap being provided.
 	 *
 	 * @return void
 	 */
@@ -264,7 +254,8 @@ class GoogleSitemap extends Controller {
 	}
 	
 	/**
-	 * Disable the sitemap.xml file
+	 * Disable Google Sitemap support. Any requests to the sitemap.xml route
+	 * will produce a 404 response.
 	 *
 	 * @return void
 	 */

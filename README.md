@@ -2,11 +2,11 @@
 
 ## Maintainer Contact
 
- * Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
+* Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
 
 ## Requirements
 
- * SilverStripe 3.0
+* SilverStripe 3.0
 
 ## Documentation
 
@@ -18,7 +18,7 @@ information on your site to be discovered by Google quickly.
 Therefore, all Silverstripe websites contain a special controller which can 
 be visited: http://yoursite.com/sitemap.xml
 
-See http://en.wikipedia.org/wiki/Sitemaps for info on this format 
+See http://en.wikipedia.org/wiki/Sitemaps for info on this format.
 
 ## Usage Overview
 

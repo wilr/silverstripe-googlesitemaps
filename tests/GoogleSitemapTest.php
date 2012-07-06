@@ -14,7 +14,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		'GoogleSitemapTest_UnviewableDataObject'
 	);
 
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 
 		if(class_exists('Page')) {
@@ -22,7 +22,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		}
 	}
 
-	function testItems() {
+	public function testItems() {
 		$sitemap = new GoogleSitemap();
 
 		// register a DataObject and see if its aded to the sitemap
@@ -37,7 +37,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		$this->assertEquals(3, $sitemap->Items()->Count());
 	}
 
-	function testItemsWithPages() {
+	public function testItemsWithPages() {
 		if(!class_exists('Page')) {
 			$this->markTestIncomplete('No cms module installed, page related test skipped');
 		}
@@ -84,7 +84,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		$this->assertEquals(4, $sitemap->Items()->Count());
 	}
 	
-	function testAccess() {
+	public function testAccess() {
 		GoogleSitemap::enable();
 		
 		$response = $this->get('sitemap.xml');
@@ -98,7 +98,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		$this->assertEquals(404, $response->getStatusCode(), 'Sitemap returns a 404 when disabled');
 	}
 	
-	function testDecoratorAddsFields() {
+	public function testDecoratorAddsFields() {
 		if(!class_exists("Page")) {
 			$this->markTestIncomplete('No cms module installed, page related test skipped');
 		}
@@ -113,7 +113,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		$this->assertInstanceOf('LiteralField', $tab->fieldByName('GoogleSitemapIntro'));
 	}
 	
-	function testGetPriority() {
+	public function testGetPriority() {
 		if(!class_exists("Page")) {
 			$this->markTestIncomplete('No cms module installed, page related test skipped');
 		}

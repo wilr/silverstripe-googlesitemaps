@@ -15,15 +15,17 @@ class GoogleSitemapDecorator extends DataExtension {
  */
 class GoogleSitemapSiteTreeDecorator extends DataExtension {
 
-	function extraStatics($class = null, $extension = null) {
-		return array(
-			'db' => array(
-				"Priority" => "Varchar(5)",
-			),
-		);
-	}
+	/**
+	 * @var array
+	 */
+	public static $db = array(
+		"Priority" => "Varchar(5)"
+	);
 
-	function updateSettingsFields(&$fields) {
+	/**
+	 * @param FieldList
+	 */
+	public function updateSettingsFields(&$fields) {
 		$prorities = array(
 			'' => _t('SiteTree.PRIORITYAUTOSET', 'Auto-set based on page depth'),
 			'-1' => _t('SiteTree.PRIORITYNOTINDEXED', "Not indexed"), // We set this to -ve one because a blank value implies auto-generation of Priority
@@ -53,17 +55,23 @@ class GoogleSitemapSiteTreeDecorator extends DataExtension {
 		));
 	}
 
-	function updateFieldLabels(&$labels) {
+	public function updateFieldLabels(&$labels) {
 		parent::updateFieldLabels($labels);
 
 		$labels['Priority'] = _t('SiteTree.METAPAGEPRIO', "Page Priority");
 	}
 
-	function onAfterPublish() {
+	/**
+	 * @return void
+	 */
+	public function onAfterPublish() {
 		GoogleSitemap::ping();
 	}
 
-	function onAfterUnpublish() {
+	/**
+	 * @return void
+	 */
+	public function onAfterUnpublish() {
 		GoogleSitemap::ping();
 	}
 
@@ -73,7 +81,7 @@ class GoogleSitemapSiteTreeDecorator extends DataExtension {
 	 *
 	 * @return float
 	 */
-	function getPriority() {
+	public function getPriority() {
 		if(!$this->owner->getField('Priority')) {
 			$parentStack = $this->owner->parentStack();
 			$numParents = is_array($parentStack) ? count($parentStack) - 1 : 0;
@@ -91,24 +99,25 @@ class GoogleSitemapSiteTreeDecorator extends DataExtension {
 	}
 
 	/**
-	 * Set a pages change frequency calculated by pages age and number of versions.
-	 * Google expects always, hourly, daily, weekly, monthly, yearly or never as values.
+	 * Returns a pages change frequency calculated by pages age and number of 
+	 * versions. Google expects always, hourly, daily, weekly, monthly, yearly 
+	 * or never as values.
 	 * 
+	 * @see http://support.google.com/webmasters/bin/answer.py?hl=en&answer=183668&topic=8476&ctx=topic
+	 *
 	 * @return void
 	 */
-	public function setChangeFrequency() {
-		// The one field that isn't easy to deal with in the template is
-		// Change frequency, so we set that here.
+	public function getChangeFrequency() {
 		$date = date('Y-m-d H:i:s');
-
 		$prop = $this->owner->toMap();
+
 		$created = new SS_Datetime();
 		$created->value = (isset($prop['Created'])) ? $prop['Created'] : $date;
 
 		$now = new SS_Datetime();
 		$now->value = $date;
+		
 		$versions = (isset($prop['Version'])) ? $prop['Version'] : 1;
-
 		$timediff = $now->format('U') - $created->format('U');
 
 		// Check how many revisions have been made over the lifetime of the
@@ -116,17 +125,19 @@ class GoogleSitemapSiteTreeDecorator extends DataExtension {
 		$period = $timediff / ($versions + 1);
 
 		if ($period > 60 * 60 * 24 * 365) {
-			$this->owner->ChangeFreq = 'yearly';
+			$freq = 'yearly';
 		} elseif ($period > 60 * 60 * 24 * 30) {
-			$this->owner->ChangeFreq = 'monthly';
+			$freq = 'monthly';
 		} elseif ($period > 60 * 60 * 24 * 7) {
-			$this->owner->ChangeFreq = 'weekly';
+			$freq = 'weekly';
 		} elseif ($period > 60 * 60 * 24) {
-			$this->owner->ChangeFreq = 'daily';
+			$freq = 'daily';
 		} elseif ($period > 60 * 60) {
-			$this->owner->ChangeFreq = 'hourly';
+			$freq = 'hourly';
 		} else {
-			$this->owner->ChangeFreq = 'always';
+			$freq = 'always';
 		}
+
+		return $freq;
 	}
 }

@@ -3,7 +3,7 @@
 	<% loop $Items %>
         <url>
             <loc>$AbsoluteLink</loc>
-            <lastmod>$LastEdited.Format(c)</lastmod>
+           	<% if $LastEdited %><lastmod>$LastEdited.Format(c)</lastmod><% end_if %>
             <% if $ChangeFreq %><changefreq>$ChangeFreq</changefreq><% end_if %>
             <% if $Priority %><priority>$Priority</priority><% end_if %>
         </url>
