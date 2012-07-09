@@ -144,7 +144,6 @@ class GoogleSitemap extends Controller {
 				
 				if(($pageHttp == $hostHttp) && !($page instanceof ErrorPage)) {
 					if($page->canView() && (!isset($page->Priority) || $page->Priority > 0)) { 
-						$
 						$output->push($page);
 					}
 				}
