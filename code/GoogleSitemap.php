@@ -94,6 +94,13 @@ class GoogleSitemap extends Controller {
 	}
 
 	/**
+	 * Clears registered dataobjects. Useful for unit tests.
+	 */
+	public static function clear_registered_dataobjects() {
+		self::$dataobjects = array();
+	}
+
+	/**
 	 * Returns a list containing each viewable {@link DataObject} instance of 
 	 * the registered class names.
 	 * 

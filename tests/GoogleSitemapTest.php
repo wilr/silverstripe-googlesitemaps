@@ -22,6 +22,12 @@ class GoogleSitemapTest extends FunctionalTest {
 		}
 	}
 
+	public function tearDown() {
+		parent::tearDown();
+
+		GoogleSitemap::clear_registered_dataobjects();
+	}
+
 	public function testItems() {
 		$sitemap = new GoogleSitemap();
 
