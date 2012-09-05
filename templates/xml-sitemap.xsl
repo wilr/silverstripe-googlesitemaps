@@ -19,7 +19,7 @@
         <div id="content">
           <h1>
             <a href="http://www.silverstripe.org" target="_blank">XML Sitemap
-            <span class="ss_link">link to Silverstripe.org</span>
+            <span class="ss_link">&#8594; www.silverstripe.org</span>
             </a>
           </h1>
 
