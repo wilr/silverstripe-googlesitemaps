@@ -8,9 +8,10 @@ body {
   color: #545353;
   color: #005A92;
   background: #B0BEC7;
+  padding: 20px;
 }
 #content {
-  margin: 20px auto;
+  margin: 0 auto;
   max-width: 1200px;
   background: #fff;
   padding: 20px 30px;
