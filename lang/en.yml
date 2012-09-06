@@ -1,0 +1,9 @@
+en:
+  SiteTree:
+    METANOTEPRIORITY: 'Manually specify a Google Sitemaps priority for this page (%s)'
+    METAPAGEPRIO: 'Page Priority'
+    PRIORITYAUTOSET: 'Auto-set based on page depth'
+    PRIORITYLEASTIMPORTANT: 'Least important'
+    PRIORITYMOSTIMPORTANT: 'Most important'
+    PRIORITYNOTINDEXED: 'Not indexed'
+    TABGOOGLESITEMAP: 'Google Sitemap'
