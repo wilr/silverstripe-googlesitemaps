@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @todo improve tests to be more robust when adding custom behaviours
  * @package googlesitemaps
  * @subpackage tests
  */
@@ -20,6 +21,10 @@ class GoogleSitemapTest extends FunctionalTest {
 		if(class_exists('Page')) {
 			$this->loadFixture('googlesitemaps/tests/GoogleSitemapPageTest.yml');
 		}
+		
+		GoogleSitemap::unregister_dataobject('GoogleSitemapTest_DataObject');
+		GoogleSitemap::unregister_dataobject('GoogleSitemapTest_OtherDataObject');
+		GoogleSitemap::unregister_dataobject('GoogleSitemapTest_UnviewableDataObject');
 	}
 
 	public function testItems() {
@@ -27,7 +32,6 @@ class GoogleSitemapTest extends FunctionalTest {
 
 		// register a DataObject and see if its aded to the sitemap
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject", '');
-
 		$this->assertEquals(2, $sitemap->Items()->Count());
 
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_OtherDataObject");
@@ -41,9 +45,8 @@ class GoogleSitemapTest extends FunctionalTest {
 		if(!class_exists('Page')) {
 			$this->markTestIncomplete('No cms module installed, page related test skipped');
 		}
-
+		
 		$sitemap = new GoogleSitemap();
-
 		$page = $this->objFromFixture('Page', 'Page1');
 		$page->publish('Stage', 'Live');
 		$page->flushCache();
@@ -52,7 +55,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		$page2->publish('Stage', 'Live');
 		$page2->flushCache();
 
-		$this->assertDOSEquals(array(
+		$this->assertDOSContains(array(
 			array('Title' => 'Testpage1'),
 			array('Title' => 'Testpage2')
 		), $sitemap->Items(), "There should be 2 pages in the sitemap after publishing");
@@ -63,7 +66,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		$page2->publish('Stage', 'Live');
 	
 		$this->session()->inst_set('loggedInAs', null);
-	
+		
 		$this->assertDOSEquals(array(
 			array('Title' => 'Testpage1')
 		), $sitemap->Items(), "There should be only 1 page, other is logged in only");

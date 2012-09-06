@@ -81,7 +81,7 @@ class GoogleSitemap extends Controller {
 			);
 		}
 	}
-
+	
 	/**
 	 * Checks whether the given class name is already registered or not.
 	 *
@@ -91,6 +91,15 @@ class GoogleSitemap extends Controller {
 	 */
 	public static function is_registered($className) {
 		return isset(self::$dataobjects[$className]);
+	}
+	
+	/**
+	 * Unregisters a class from the sitemap. Mostly used for the test suite
+	 *
+	 * @param string
+	 */
+	public static function unregister_dataobject($className) {
+		unset(self::$dataobjects[$className]);
 	}
 
 	/**
