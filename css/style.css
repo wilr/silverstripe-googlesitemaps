@@ -1,0 +1,131 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #545353;
+  color: #005A92;
+  background: #B0BEC7;
+  padding: 20px;
+}
+#content {
+  margin: 0 auto;
+  max-width: 1200px;
+  background: #fff;
+  padding: 20px 30px;
+  -webkit-box-shadow:  2px 2px 5px 1px rgba(0, 0, 0, 0.2);
+  box-shadow:  2px 2px 5px 1px rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+}
+h1{
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: bold;
+  color: #1556B2;
+  color: #005A92;
+/*  text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
+  filter: dropshadow(color=#000, offx=2, offy=2);*/
+  padding-left: 31px;
+  background: url("../images/logo_small.png") transparent left top no-repeat scroll;
+  margin: 0 0 20px 0;
+  display: inline-block;
+}
+h1 a{
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+}
+h1 .ss_link{
+  visibility: hidden;
+  font-size: 9px;
+  display: block;
+  text-align: right;
+  margin-top: -5px;
+}
+h1:hover .ss_link{
+  visibility: visible;
+  text-decoration: underline;
+
+}
+.expl {
+  margin: 10px 3px;
+  line-height: 1.3em;
+}
+.expl a {
+  color: #1556B2;
+  font-weight: bold;
+  text-decoration: none;
+}
+.expl a:hover{
+  text-decoration: underline;
+}
+
+table.tablesorter {
+	background-color: #CDCDCD;
+	margin:20px 0pt 15px;
+	font-size: 8pt;
+	width: 100%;
+	text-align: left;
+  border: none;
+  border-collapse: collapse;
+  border-bottom: 1px solid #005A92;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+	/*background-color: #e6EEEE;*/
+  background-color: #F5FAFA;
+	font-size: 8pt;
+	padding: 4px 20px 4px 10px;
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+  background-color: #B0BEC7;
+  background-color: #e6EEEE;
+}
+
+table.tablesorter thead tr .header {
+	background-image: url("../images/bg.gif");
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+  border-bottom: 1px solid #005A92;
+}
+table.tablesorter thead tr .headerSortUp {
+	background-image: url("../images/asc.gif");
+}
+table.tablesorter thead tr .headerSortDown {
+	background-image: url("../images/desc.gif");
+}
+
+table.tablesorter tbody td {
+	color: #005A92;
+	padding: 4px;
+
+	vertical-align: top;
+}
+table.tablesorter tbody tr{
+  background-color: #FFF;
+}
+table.tablesorter tbody tr.odd  {
+	background-color:#EFF2F3;
+}
+ table.tablesorter tbody tr:hover {
+  background-color: #D8E1E8;
+}
+table.tablesorter tbody a{
+  color: #444;color: #005A92;
+  text-decoration: none;
+}
+table.tablesorter tbody a:hover{
+  text-decoration: underline;
+}
+table.tablesorter tbody tr:hover td,
+table.tablesorter tbody tr:hover a{
+  color: #000;
+}
+#Footer{
+  margin: 50px 0 10px;
+  text-align: right;
+  font-size: 0.8em;
+}
