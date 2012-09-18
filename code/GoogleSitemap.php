@@ -208,15 +208,33 @@ class GoogleSitemap extends Controller {
 			'sitemap.xml'
 		));
 		
-		$response = HTTP::sendRequest(
-			"www.google.com", 
-			"/webmasters/sitemaps/ping",
-			sprintf("sitemap=%s", $location)
+		$response = self::send_ping(
+				"www.google.com", "/webmasters/sitemaps/ping", sprintf("sitemap=%s", $location)
 		);
-			
+
 		return $response;
 	}
-	
+
+	/**
+	 * Send an HTTP request to the host.
+	 *
+	 * @return String Response text
+	 */
+	protected static function send_ping($host, $path, $query) {
+		$socket = fsockopen($host, $port, $errno, $error);
+		if (!$socket) {
+			return $error;
+		}
+		if ($query) {
+			$query = '?' . $query;
+		}
+		$request = "GET {$path}{$query} HTTP/1.1\r\nHost: $host\r\nConnection: Close\r\n\r\n";
+		fwrite($socket, $request);
+		$response = stream_get_contents($socket);
+
+		return $response;
+	}
+
 	/**
 	 * Enable pings to google.com whenever sitemap changes.
 	 *
