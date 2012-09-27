@@ -221,7 +221,7 @@ class GoogleSitemap extends Controller {
 	 * @return String Response text
 	 */
 	protected static function send_ping($host, $path, $query) {
-		$socket = fsockopen($host, $port, $errno, $error);
+		$socket = fsockopen($host, 80, $errno, $error);
 		if (!$socket) {
 			return $error;
 		}
