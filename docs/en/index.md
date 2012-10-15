@@ -28,7 +28,7 @@ manually, including requesting to have the page excluded from the sitemap.
 
 ## Setup automatic pinging
 
-	GoogleSitemap::enable_google_notificaton();
+	GoogleSitemap::enable_google_notification();
 
 ### Including DataObjects
 
