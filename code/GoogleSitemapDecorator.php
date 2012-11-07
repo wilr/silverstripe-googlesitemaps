@@ -105,7 +105,7 @@ class GoogleSitemapSiteTreeDecorator extends DataExtension {
 	 * 
 	 * @see http://support.google.com/webmasters/bin/answer.py?hl=en&answer=183668&topic=8476&ctx=topic
 	 *
-	 * @return void
+	 * @return SS_Datetime
 	 */
 	public function getChangeFrequency() {
 		$date = date('Y-m-d H:i:s');
