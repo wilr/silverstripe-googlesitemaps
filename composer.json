@@ -1,0 +1,15 @@
+{
+	"name": "silverstripe-labs/googlesitemaps",
+	"description": "SilverStripe support for the Google Sitemaps XML system, enabling Google and other search engines to see all urls on your site. This helps your SilverStripe website rank well in search engines, and to encourage the information on your site to be discovered by Google quickly.",
+	"type": "silverstripe-module",
+	"keywords": ["silverstripe", "googlesitemaps", "seo"],
+	"homepage": "https://github.com/silverstripe-labs/silverstripe-googlesitemaps",
+	"license": "BSD",
+	"authors": [{
+		"name": "Will Rossiter",
+		"email": "will@fullscreen.io"
+	}],
+	"require": {
+		"silverstripe/framework": "3.*"
+	}
+}
