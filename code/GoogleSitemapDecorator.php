@@ -89,7 +89,7 @@ class GoogleSitemapSiteTreeDecorator extends DataExtension {
 			return max(0.1, 1.0 - ($numParents / 10));
 		} 
 		elseif ($this->owner->getField('Priority') == -1) {
-			return 0;
+			return -1;
 		} 
 		else {
 			$priority = abs($this->owner->getField('Priority'));
