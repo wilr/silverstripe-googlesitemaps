@@ -38,7 +38,10 @@ class GoogleSitemapSiteTreeDecorator extends SiteTreeDecorator {
 			'0.2' => '9',
 			'0.1' => '10 - ' . _t('SiteTree.PRIORITYLEASTIMPORTANT', "Least important")
 		);
-
+		
+		/* Remove GoogleSitemap tab if it already exists */		
+		$fields->removeByName('GoogleSitemap');
+		
 		$tabset = $fields->findOrMakeTab('Root.Content');
 		
 		$message = "<p>";
