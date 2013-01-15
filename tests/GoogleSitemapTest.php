@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @todo improve tests to be more robust when adding custom behaviours
  * @package googlesitemaps
  * @subpackage tests
  */
@@ -22,9 +21,7 @@ class GoogleSitemapTest extends FunctionalTest {
 			$this->loadFixture('googlesitemaps/tests/GoogleSitemapPageTest.yml');
 		}
 		
-		GoogleSitemap::unregister_dataobject('GoogleSitemapTest_DataObject');
-		GoogleSitemap::unregister_dataobject('GoogleSitemapTest_OtherDataObject');
-		GoogleSitemap::unregister_dataobject('GoogleSitemapTest_UnviewableDataObject');
+		GoogleSitemap::clear_registered_dataobjects();
 	}
 
 	public function tearDown() {
@@ -33,26 +30,92 @@ class GoogleSitemapTest extends FunctionalTest {
 		GoogleSitemap::clear_registered_dataobjects();
 	}
 
-	public function testItems() {
-		$sitemap = new GoogleSitemap();
 
-		// register a DataObject and see if its aded to the sitemap
+	public function testGetItems() {
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject", '');
-		$this->assertEquals(2, $sitemap->Items()->Count());
+
+		$items = GoogleSitemap::get_items('GoogleSitemapTest_DataObject', 1);
+		$this->assertEquals(2, $items->count());
+
+		$this->assertDOSEquals(array(
+			array("Priority" => "0.2"),
+			array("Priority" => "0.4")
+		), $items);
 
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_OtherDataObject");
-		$this->assertEquals(3, $sitemap->Items()->Count());
+		$this->assertEquals(1, GoogleSitemap::get_items('GoogleSitemapTest_OtherDataObject', 1)->count());
 
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_UnviewableDataObject");
-		$this->assertEquals(3, $sitemap->Items()->Count());
+		$this->assertEquals(0, GoogleSitemap::get_items('GoogleSitemapTest_UnviewableDataObject', 1)->count());
 	}
 
-	public function testItemsWithPages() {
+	public function testAccessingSitemapRootXMLFile() {
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_OtherDataObject");
+
+		$response = $this->get('sitemap.xml');
+		$body = $response->getBody();
+
+		// the sitemap should contain <loc> to both those files and not the other
+		// dataobject as it hasn't been registered
+		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1") ."</loc>";
+		$this->assertEquals(1, substr_count($body, $expected) , 'A link to GoogleSitemapTest_DataObject exists');
+		
+		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_OtherDataObject/1") ."</loc>";
+		$this->assertEquals(1, substr_count($body, $expected) , 'A link to GoogleSitemapTest_OtherDataObject exists');
+
+		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_UnviewableDataObject/2") ."</loc>";
+		$this->assertEquals(0, substr_count($body, $expected) , 'A link to a GoogleSitemapTest_UnviewableDataObject does not exist');
+	} 
+
+	public function testLastModifiedDateOnRootXML() {
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+
+		DB::query("
+			UPDATE GoogleSitemapTest_DataObject SET LastEdited = '2012-01-14'"
+		);
+
+		$response = $this->get('sitemap.xml');
+		$body = $response->getBody();
+
+		$expected = "<lastmod>2012-01-14</lastmod>";
+		$this->assertEquals(1, substr_count($body, $expected));
+	}
+
+	public function testIndexFilePaginatedSitemapFiles() {
+		$original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+
+		$response = $this->get('sitemap.xml');
+		$body = $response->getBody();
+		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1") ."</loc>";
+		$this->assertEquals(1, substr_count($body, $expected) , 'A link to the first page of GoogleSitemapTest_DataObject exists');
+
+		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_DataObject/2") ."</loc>";
+		$this->assertEquals(1, substr_count($body, $expected) , 'A link to the second page GoogleSitemapTest_DataObject exists');
+
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+	}
+
+	public function testAccessingNestedSiteMap() {
+		$original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+
+		$response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+		$body = $response->getBody();
+
+		$this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
+
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+	}
+
+	public function testGetItemsWithPages() {
 		if(!class_exists('Page')) {
 			$this->markTestIncomplete('No cms module installed, page related test skipped');
 		}
 		
-		$sitemap = new GoogleSitemap();
 		$page = $this->objFromFixture('Page', 'Page1');
 		$page->publish('Stage', 'Live');
 		$page->flushCache();
@@ -64,7 +127,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		$this->assertDOSContains(array(
 			array('Title' => 'Testpage1'),
 			array('Title' => 'Testpage2')
-		), $sitemap->Items(), "There should be 2 pages in the sitemap after publishing");
+		), GoogleSitemap::get_items('SiteTree'), "There should be 2 pages in the sitemap after publishing");
 	
 		// check if we make a page readonly that it is hidden
 		$page2->CanViewType = 'LoggedInUsers';
@@ -75,36 +138,30 @@ class GoogleSitemapTest extends FunctionalTest {
 		
 		$this->assertDOSEquals(array(
 			array('Title' => 'Testpage1')
-		), $sitemap->Items(), "There should be only 1 page, other is logged in only");
-		
-		// register a DataObject and see if its aded to the sitemap
-		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject", '');
-		
-		// check to see if we have the GoogleSitemapTest_DataObject objects
-		$this->assertEquals(3, $sitemap->Items()->Count());
-
-		// register another dataobject
-		GoogleSitemap::register_dataobject("GoogleSitemapTest_OtherDataObject");
-		$this->assertEquals(4, $sitemap->Items()->Count());
-
-		// check if we register objects that are unreadable they don't end up
-		// in the sitemap
-		GoogleSitemap::register_dataobject("GoogleSitemapTest_UnviewableDataObject");
-		$this->assertEquals(4, $sitemap->Items()->Count());
+		), GoogleSitemap::get_items('SiteTree'), "There should be only 1 page, other is logged in only");
 	}
 	
 	public function testAccess() {
-		GoogleSitemap::enable();
+		Config::inst()->update('GoogleSitemap', 'enabled', true);
 		
 		$response = $this->get('sitemap.xml');
 
 		$this->assertEquals(200, $response->getStatusCode(), 'Sitemap returns a 200 success when enabled');
 		$this->assertEquals('application/xml; charset="utf-8"', $response->getHeader('Content-Type'));
 		
-		GoogleSitemap::disable();
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+		$response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+		$this->assertEquals(200, $response->getStatusCode(), 'Sitemap returns a 200 success when enabled');
+		$this->assertEquals('application/xml; charset="utf-8"', $response->getHeader('Content-Type'));
+
+		Config::inst()->remove('GoogleSitemap', 'enabled');
+		Config::inst()->update('GoogleSitemap', 'enabled', false);
 		
 		$response = $this->get('sitemap.xml');
-		$this->assertEquals(404, $response->getStatusCode(), 'Sitemap returns a 404 when disabled');
+		$this->assertEquals(404, $response->getStatusCode(), 'Sitemap index returns a 404 when disabled');
+
+		$response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+		$this->assertEquals(404, $response->getStatusCode(), 'Sitemap file returns a 404 when disabled');
 	}
 	
 	public function testDecoratorAddsFields() {
@@ -131,11 +188,11 @@ class GoogleSitemapTest extends FunctionalTest {
 
 		// invalid field doesn't break google
 		$page->Priority = 'foo';
-		$this->assertEquals(0.5, $page->getPriority());
+		$this->assertEquals(0.5, $page->getGooglePriority());
 		
-		// google doesn't like -1 but we use it to indicate the minimum
+		// -1 indicates that we should not index this
 		$page->Priority = -1;
-		$this->assertEquals(0, $page->getPriority());
+		$this->assertFalse($page->getGooglePriority());
 	}
 }
 

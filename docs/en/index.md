@@ -25,10 +25,35 @@ Importance drops from 1.0, to 0.9, to 0.8, and so on, until 0.1 is reached).
 In the CMS, in the Settings tab for each page, you can set the importance 
 manually, including requesting to have the page excluded from the sitemap.
 
+## Configuration
 
-## Setup automatic pinging
+Most module configuration is done via the SilverStripe Config API. Create a new
+config file `mysite/_config/googlesitemaps.yml` with the following outline:
 
-	GoogleSitemap::enable_google_notification();
+	---
+	Name: customgooglesitemaps
+	After: googlesitemaps
+	---
+	GoogleSitemap:
+  		enabled: true
+  		objects_per_sitemap: 1000
+  		google_notification_enabled: false
+  		use_show_in_search: true
+
+You can now alter any of those properties to set your needs. A popular option
+is to turn on automatic pinging so that Google is notified of any updates to
+your page. You can set this in the file we created in the last paragraph by
+editing the `google_notification_enabled` option to true
+
+	---
+	Name: customgooglesitemaps
+	After: googlesitemaps
+	---
+	GoogleSitemap:
+  		enabled: true
+  		objects_per_sitemap: 1000
+  		google_notification_enabled: true
+  		use_show_in_search: true
 
 ### Including DataObjects
 
@@ -79,38 +104,3 @@ instead of the previous code you would write:
 See the following blog post for more information:
 
 http://www.silvercart.org/blog/dataobjects-and-googlesitemaps/
-
-### Including other routes
-
-If your project has routes that are not stored in the database such as custom
-controllers and actions, the module provides an extension hook called 
-*updateItems* which allows anyone to write extensions to alter the provided
-items.
-
-Here's an example of registering the MyController/about URL which is defined as
-an action. First we create our new extension and define the links we wish to 
-add to the $items list.
-
-	<?php
-
-	class GoogleSitemapExtension extends Extension {
-		
-		public function updateItems($items) {
-			$base = Director::absoluteBaseUrl();
-			$routes = array(
-				'/MyController/',
-				'/MyController/about/'
-			);
-
-			foreach($routes as $route) {
-				$items->push(new ArrayData(array(
-					'AbsoluteLink' => Controller::join_links($base, $route)
-				)));
-			}
-		}
-	}
-
-Before we can see the updates we first must add this extension to our built in
-class. Inside your mysite/_config.php file add the following:
-
-	Object::add_extension('GoogleSitemap', 'GoogleSitemapExtension');

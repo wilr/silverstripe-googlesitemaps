@@ -2,7 +2,7 @@
 
 // add the extension to pages
 if (class_exists('SiteTree')) {
-	Object::add_extension('SiteTree', 'GoogleSitemapSiteTreeDecorator');
+	Object::add_extension('SiteTree', 'GoogleSitemapSiteTreeExtension');
 }
 
 // if you need to add this to DataObjects include the following in

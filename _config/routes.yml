@@ -3,4 +3,4 @@ Name: googlesitemaproutes
 ---
 Director:
   rules:
-    'sitemap.xml': 'GoogleSitemap'
+    'sitemap.xml': 'GoogleSitemapController'

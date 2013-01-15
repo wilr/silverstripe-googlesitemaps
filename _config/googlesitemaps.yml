@@ -1,0 +1,8 @@
+---
+Name: googlesitemaps
+---
+GoogleSitemap:
+  enabled: true
+  objects_per_sitemap: 1000
+  google_notification_enabled: false
+  use_show_in_search: true
