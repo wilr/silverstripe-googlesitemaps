@@ -29,12 +29,20 @@
 class GoogleSitemap {
 
 	/**
-	 * List of DataObject class names to include. As well as the change 
+	 * List of {@link DataObject} class names to include. As well as the change
 	 * frequency and priority of each class.
 	 *
 	 * @var array
 	 */
 	private static $dataobjects = array();
+
+	/**
+	 * List of custom routes to include in the sitemap (such as controller
+	 * subclasses) as well as the change frequency and priority.
+	 *
+	 * @var array
+	 */
+	private static $routes = array();
 
 	/**
 	 * Decorates the given DataObject with {@link GoogleSitemapDecorator}
@@ -62,6 +70,25 @@ class GoogleSitemap {
 	}
 	
 	/**
+	 * Registers multiple dataobjects in a single line. See {@link register_dataobject}
+	 * for the heavy lifting
+	 *
+	 * @param array $dataobjects array of class names of DataObject to register
+	 * @param string $changeFreq how often is this DataObject updated?
+	 *                           Possible values:
+	 *                           always, hourly, daily, weekly, monthly, yearly, never
+	 * @param string $priority   How important is this DataObject in comparison to other urls?
+	 *                           Possible values: 0.1, 0.2 ... , 0.9, 1.0
+	 *
+	 * @return void
+	 */
+	public static function register_dataobjects($dataobjects, $changeFreq = 'monthly', $priority = '0.6') {
+		foreach($dataobjects as $obj) {
+			self::register_dataobject($obj, $changeFreq, $priority);
+		}
+	}
+
+	/**
 	 * Checks whether the given class name is already registered or not.
 	 *
 	 * @param string $className Name of DataObject to check
@@ -83,9 +110,54 @@ class GoogleSitemap {
 
 	/**
 	 * Clears registered {@link DataObjects}. Useful for unit tests.
+	 *
+	 * @return void
 	 */
 	public static function clear_registered_dataobjects() {
 		self::$dataobjects = array();
+	}
+
+	/**
+	 * Register a given route to the sitemap list
+	 *
+	 * @param string
+	 * @param string
+	 * @param string
+	 *
+	 * @return void
+	 */
+	public static function register_route($route, $changeFreq = 'monthly', $priority = '0.6') {
+		self::$routes = array_merge(self::$routes, array(
+			$route => array(
+				'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
+				'priority' => ($priority) ? $priority : '0.6'
+			)
+		));
+	}
+
+	/**
+	 * Registers a given list of relative urls. Will be merged with the current
+	 * registered routes. If you want to replace them, please call {@link clear_routes}
+	 *
+	 * @param array
+	 * @param string
+	 * @param string
+	 *
+	 * @return void
+	 */
+	public static function register_routes($routes, $changeFreq = 'monthly', $priority = '0.6') {
+		foreach($routes as $route) {
+			self::register_route($route, $changeFreq, $priority);
+		}
+	}
+
+	/**
+	 * Clears registered routes
+	 *
+	 * @return void
+	 */
+	public static function clear_registered_routes() {
+		self::$routes = array();
 	}
 
 	/**
@@ -106,6 +178,22 @@ class GoogleSitemap {
 		if($class == "SiteTree") {
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
 			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
+		}
+		else if($class == "GoogleSitemapRoute") {
+			$instances = array_slice(self::$routes, ($page - 1) * $count, $count);
+			$output = new ArrayList();
+
+			if($instances) {
+				foreach($instances as $route => $config) {
+					$output->push(new ArrayData(array(
+						'AbsoluteLink' => Director::absoluteURL($route),
+						'ChangeFrequency' => $config['frequency'],
+						'GooglePriority' => $config['priority']
+					)));
+				}
+			}
+
+			return $output;
 		}
 		else {
 			$instances = new DataList($class);
@@ -196,7 +284,7 @@ class GoogleSitemap {
 			}
 		}
 
-		if(self::$dataobjects) {
+		if(count(self::$dataobjects) > 0) {
 			foreach(self::$dataobjects as $class => $config) {
 				$list = new DataList($class);
 				$list = $list->sort('LastEdited ASC');
@@ -217,6 +305,17 @@ class GoogleSitemap {
 						'LastModified' => $lastModified
 					)));
 				}
+			}
+		}
+
+		if(count(self::$routes) > 0) {
+			$needed = ceil(count(self::$routes) / $countPerFile);
+
+			for($i = 1; $i <= $needed; $i++) {
+				$sitemaps->push(new ArrayData(array(
+					'ClassName' => 'GoogleSitemapRoute',
+					'Page' => $i
+				)));
 			}
 		}
 

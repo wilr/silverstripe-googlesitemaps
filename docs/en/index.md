@@ -104,3 +104,16 @@ instead of the previous code you would write:
 See the following blog post for more information:
 
 http://www.silvercart.org/blog/dataobjects-and-googlesitemaps/
+
+### Including custom routes
+
+Occasionally you may have a need to include custom url's in your sitemap for
+your Controllers and other pages which don't exist in the database. To update
+the sitemap to include those links call register_routes() with your array of
+urls to include.
+
+	GoogleSitemap::register_routes(array(
+		'/my-custom-controller/',
+		'/Security/',
+		'/Security/login/'
+	));

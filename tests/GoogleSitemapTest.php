@@ -22,12 +22,24 @@ class GoogleSitemapTest extends FunctionalTest {
 		}
 		
 		GoogleSitemap::clear_registered_dataobjects();
+		GoogleSitemap::clear_registered_routes();
 	}
 
 	public function tearDown() {
 		parent::tearDown();
 
 		GoogleSitemap::clear_registered_dataobjects();
+		GoogleSitemap::clear_registered_routes();
+	}
+
+	public function testIndexFileWithCustomRoute() {
+		GoogleSitemap::register_route('/test/');
+
+		$response = $this->get('sitemap.xml');
+		$body = $response->getBody();
+
+		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapRoute/1") ."</loc>";
+		$this->assertEquals(1, substr_count($body, $expected) , 'A link to the custom routes exists');
 	}
 
 
@@ -47,6 +59,17 @@ class GoogleSitemapTest extends FunctionalTest {
 
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_UnviewableDataObject");
 		$this->assertEquals(0, GoogleSitemap::get_items('GoogleSitemapTest_UnviewableDataObject', 1)->count());
+	}
+
+	public function testGetItemsWithCustomRoutes() {
+		GoogleSitemap::register_routes(array(
+			'/test-route/',
+			'/someother-route/',
+			'/fake-sitemap-route/'
+		));
+
+		$items = GoogleSitemap::get_items('GoogleSitemapRoute', 1);
+		$this->assertEquals(3, $items->count());
 	}
 
 	public function testAccessingSitemapRootXMLFile() {
@@ -96,6 +119,21 @@ class GoogleSitemapTest extends FunctionalTest {
 		$this->assertEquals(1, substr_count($body, $expected) , 'A link to the second page GoogleSitemapTest_DataObject exists');
 
 		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+	}
+
+	public function testRegisterRoutesIncludesAllRoutes() {
+		GoogleSitemap::register_route('/test/');
+		GoogleSitemap::register_routes(array(
+			'/test/', // duplication should be replaced
+			'/unittests/',
+			'/anotherlink/'
+		), 'weekly');
+
+		$response = $this->get('sitemap.xml/sitemap/GoogleSitemapRoute/1');
+		$body = $response->getBody();
+
+		$this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
+		$this->assertEquals(3, substr_count($body, "<loc>"));
 	}
 
 	public function testAccessingNestedSiteMap() {
