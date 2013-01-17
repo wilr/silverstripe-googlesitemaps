@@ -236,7 +236,7 @@ class GoogleSitemap {
 	 * @return string Response text
 	 */
 	public static function ping() {
-		if(!self::$enabled) {
+		if(!self::enabled()) {
 			return false;
 		}
 		
