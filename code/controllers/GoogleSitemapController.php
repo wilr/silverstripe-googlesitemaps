@@ -34,8 +34,11 @@ class GoogleSitemapController extends Controller {
 			
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 
+			$sitemaps = GoogleSitemap::get_sitemaps();
+			$this->extend('updateGoogleSitemaps', $sitemaps);
+
 			return array(
-				'Sitemaps' => GoogleSitemap::get_sitemaps()
+				'Sitemaps' => $sitemaps
 			);
 		} else {
 			return new SS_HTTPResponse('Page not found', 404);
@@ -57,9 +60,11 @@ class GoogleSitemapController extends Controller {
 			
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 
-			// But we want to still render.
+			$items = GoogleSitemap::get_items($class, $page);
+			$this->extend('updateGoogleSitemapItems', $items, $class, $page);
+
 			return array(
-				'Items' => GoogleSitemap::get_items($class, $page)
+				'Items' => $items
 			);
 		} else {
 			return new SS_HTTPResponse('Page not found', 404);
