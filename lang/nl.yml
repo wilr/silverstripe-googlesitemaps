@@ -1,0 +1,9 @@
+nl:
+  GoogleSitemaps:
+    METANOTEPRIORITY: 'Handmatig de prioriteit van Google Sitemaps aanpassen voor deze pagina (%s)'
+    METAPAGEPRIO: 'Pagina prioriteit'
+    PRIORITYAUTOSET: 'Automatisch de pagina diepte maken'
+    PRIORITYLEASTIMPORTANT: 'Minst belangrijke'
+    PRIORITYMOSTIMPORTANT: 'Meest belangrijke'
+    PRIORITYNOTINDEXED: 'niet geïndexeerd'
+    TABGOOGLESITEMAP: 'Google Sitemap'
