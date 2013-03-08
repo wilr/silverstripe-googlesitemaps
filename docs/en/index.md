@@ -96,10 +96,10 @@ do that, include the following in your _config.php file.
 	GoogleSitemap::register_dataobject('MyDataObject');
 
 If you need to change the frequency of the indexing, you can pass the change 
-frequency (daily, weekly, monthly) as a second parameter to register(), So 
+frequency (daily, weekly, monthly) as a second parameter to register_dataobject(), So 
 instead of the previous code you would write:
 
-	GoogleSitemap::register('MyDataObject', 'daily');	
+	GoogleSitemap::register_dataobject('MyDataObject', 'daily');	
 	
 See the following blog post for more information:
 
