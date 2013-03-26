@@ -60,7 +60,7 @@ class GoogleSitemap {
 	 */
 	public static function register_dataobject($className, $changeFreq = 'monthly', $priority = '0.6') {
 		if (!self::is_registered($className)) {
-			Object::add_extension($className, 'GoogleSitemapExtension');
+			$className::add_extension('GoogleSitemapExtension');
 			
 			self::$dataobjects[$className] = array(
 				'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
