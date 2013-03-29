@@ -1,0 +1,14 @@
+#############################
+### Sync file
+#############################
+not_rsync_up
+not_rsync_down
+syncUpTest.sh
+syncUp.sh
+syncDownTest.sh
+syncDown.sh
+#############################
+### File da escludere
+#############################
+.git
+.gitignore
