@@ -1,5 +1,7 @@
 # Google Sitemaps Module
 
+[![Build Status](https://secure.travis-ci.org/silverstripe-labs/silverstripe-googlesitemaps.png?branch=1.0)](http://travis-ci.org/silverstripe-labs/silverstripe-googlesitemaps)
+
 ## Maintainer Contact
 
 * Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
