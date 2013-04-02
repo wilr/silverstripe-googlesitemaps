@@ -17,7 +17,7 @@ class GoogleSitemapController extends Controller {
 	/**
 	 * @var array
 	 */
-	public static $allowed_actions = array(
+	private static $allowed_actions = array(
 		'index',
 		'sitemap'	
 	);

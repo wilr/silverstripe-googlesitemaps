@@ -8,7 +8,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 	/**
 	 * @var array
 	 */
-	public static $db = array(
+	private static $db = array(
 		"Priority" => "Varchar(5)"
 	);
 
