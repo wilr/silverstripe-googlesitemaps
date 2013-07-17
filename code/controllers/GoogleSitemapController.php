@@ -30,7 +30,7 @@ class GoogleSitemapController extends Controller {
 	 */
 	public function index($url) {
 		if(GoogleSitemap::enabled()) {
-			SSViewer::set_source_file_comments(false);
+			Config::inst()->update('SSViewer', 'set_source_file_comments', false);
 			
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 
@@ -56,7 +56,7 @@ class GoogleSitemapController extends Controller {
 		$page = $this->request->param('OtherID');
 
 		if(GoogleSitemap::enabled() && $class && $page) {
-			SSViewer::set_source_file_comments(false);
+			Config::inst()->update('SSViewer', 'set_source_file_comments', false);
 			
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 
