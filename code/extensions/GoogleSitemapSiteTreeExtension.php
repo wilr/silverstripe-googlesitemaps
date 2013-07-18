@@ -71,6 +71,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 	 * @return mixed
 	 */
 	public function getGooglePriority() {
+		setlocale(LC_ALL, "en_US.UTF8");
 		$priority = $this->owner->getField('Priority');
 
 		if(!$priority) {
