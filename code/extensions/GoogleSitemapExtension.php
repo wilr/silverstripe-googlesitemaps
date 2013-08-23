@@ -14,23 +14,31 @@ class GoogleSitemapExtension extends DataExtension {
     public function canIncludeInGoogleSitemap() {
     	$can = true;
 
-    	if(method_exists($this, 'AbsoluteLink')) {
-			$objHttp = parse_url($this->AbsoluteLink(), PHP_URL_HOST);
-			$hostHttp = parse_url('http://' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
+		//if the class we're decorating has an AbsoluteLink method, we'll use
+		// it to determine if the page is on this domain - this hadnles
+		// RedirectorPages nicely
+    	if($this->owner->hasMethod('AbsoluteLink')) {
+			//parse out the hosts and compare them
+			$objHttp = parse_url($this->owner->AbsoluteLink(), PHP_URL_HOST);
+			$hostHttp = parse_url(Director::protocolAndHost(), PHP_URL_HOST);
 				
+			//if they don't match, then we won't add it
 			if($objHttp != $hostHttp) {
 				$can = false;
 			}
 		}
 		
 		if($can) {
+			//check we canView
 			$can = $this->owner->canView();
 		}
 
 		if($can) {
+			//only show priorities over 0%
 			$can = $this->owner->getGooglePriority();
 		}
 
+		//allow people to hook into the $can
 		$this->owner->extend('alterCanIncludeInGoogleSitemap', $can);
 
 		return $can;

@@ -249,7 +249,7 @@ class GoogleSitemapTest_DataObject extends DataObject implements TestOnly {
 	}
 
 	public function AbsoluteLink() {
-		return Director::baseURL();
+		return Director::absoluteBaseURL();
 	}
 }
 
@@ -268,7 +268,7 @@ class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly {
 	}
 
 	public function AbsoluteLink() {
-		return Director::baseURL();
+		return Director::absoluteBaseURL();
 	}
 }
 
@@ -287,6 +287,6 @@ class GoogleSitemapTest_UnviewableDataObject extends DataObject implements TestO
 	}
 
 	public function AbsoluteLink() {
-		return Director::baseURL();
+		return Director::absoluteBaseURL();
 	}
 }
