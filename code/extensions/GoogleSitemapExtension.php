@@ -7,17 +7,17 @@
  * @package googlesitemaps
  */
 class GoogleSitemapExtension extends DataExtension {
-    
-    /**
-     * @return boolean
-     */
-    public function canIncludeInGoogleSitemap() {
-    	$can = true;
 
-    	if(method_exists($this, 'AbsoluteLink')) {
-			$objHttp = parse_url($this->AbsoluteLink(), PHP_URL_HOST);
-			$hostHttp = parse_url('http://' . $_SERVER['HTTP_HOST'], PHP_URL_HOST);
-				
+	/**
+	 * @return boolean
+	 */
+	public function canIncludeInGoogleSitemap() {
+		$can = true;
+
+		if($this->owner->hasMethod('AbsoluteLink')) {
+			$hostHttp = parse_url(Director::protocolAndHost(), PHP_URL_HOST);
+			$objHttp = parse_url($this->owner->AbsoluteLink(), PHP_URL_HOST);
+
 			if($objHttp != $hostHttp) {
 				$can = false;
 			}
@@ -34,7 +34,7 @@ class GoogleSitemapExtension extends DataExtension {
 		$this->owner->extend('alterCanIncludeInGoogleSitemap', $can);
 
 		return $can;
-    }
+	}
 
 
 	/**
