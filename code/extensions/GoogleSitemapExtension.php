@@ -31,7 +31,7 @@ class GoogleSitemapExtension extends DataExtension {
 			$can = $this->owner->getGooglePriority();
 		}
 
-		$this->owner->extend('alterCanIncludeInGoogleSitemap', $can);
+		$this->owner->invokeWithExtensions('alterCanIncludeInGoogleSitemap', $can);
 
 		return $can;
 	}
