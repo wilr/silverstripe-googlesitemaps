@@ -75,7 +75,7 @@ to show the DataObject by its ID.
 	
 	class MyDataObject extends DataObject {
 		
-		function canView() {
+		function canView($member = null) {
 			return true;
 		}
 		
