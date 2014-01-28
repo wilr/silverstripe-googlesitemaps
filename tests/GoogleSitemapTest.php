@@ -232,6 +232,38 @@ class GoogleSitemapTest extends FunctionalTest {
 		$page->Priority = -1;
 		$this->assertFalse($page->getGooglePriority());
 	}
+	
+	public function testUnpublishedPage() {
+		
+		if(!class_exists('SiteTree')) {
+			$this->markTestSkipped('Test skipped; CMS module required for testUnpublishedPage');
+		}
+		
+		$orphanedPage = new SiteTree();
+		$orphanedPage->ParentID = 999999; // missing parent id
+		$orphanedPage->write();
+		$orphanedPage->publish("Stage", "Live");
+		
+		$rootPage = new SiteTree();
+		$rootPage->ParentID = 0;
+		$rootPage->write();
+		$rootPage->publish("Stage", "Live");
+		
+		$oldMode = Versioned::get_reading_mode();
+		Versioned::reading_stage('Live');
+		
+		try {
+			$this->assertEmpty($orphanedPage->hasPublishedParent());
+			$this->assertEmpty($orphanedPage->canIncludeInGoogleSitemap());
+			$this->assertNotEmpty($rootPage->hasPublishedParent());
+			$this->assertNotEmpty($rootPage->canIncludeInGoogleSitemap());
+		} catch(Exception $ex) {
+			Versioned::set_reading_mode($oldMode);
+			throw $ex;
+		} // finally {
+			Versioned::set_reading_mode($oldMode);
+		// }
+	}
 }
 
 /**

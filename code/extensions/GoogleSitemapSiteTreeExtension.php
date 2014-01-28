@@ -56,11 +56,33 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 
 		$labels['Priority'] = _t('GoogleSitemaps.METAPAGEPRIO', "Page Priority");
 	}
+	
+	/**
+	 * Ensure that all parent pages of this page (if any) are published
+	 * 
+	 * @return boolean
+	 */
+	public function hasPublishedParent() {
+		
+		// Skip root pages
+		if(empty($this->owner->ParentID)) return true;
+		
+		// Ensure direct parent exists
+		$parent = $this->owner->Parent();
+		if(empty($parent) || !$parent->exists()) return false;
+		
+		// Check ancestry
+		return $parent->hasPublishedParent();
+	}
 
 	/**
 	 * @return boolean
 	 */
 	public function canIncludeInGoogleSitemap() {
+		
+		// Check that parent page is published
+		if(!$this->owner->hasPublishedParent()) return false;
+		
 		$result = parent::canIncludeInGoogleSitemap();
 		$result = ($this->owner instanceof ErrorPage) ? false : $result;
 
