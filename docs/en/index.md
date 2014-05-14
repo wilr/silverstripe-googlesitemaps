@@ -39,6 +39,7 @@ config file `mysite/_config/googlesitemaps.yml` with the following outline:
   		objects_per_sitemap: 1000
   		google_notification_enabled: false
   		use_show_in_search: true
+  		set_change_frequency: false
 
 You can now alter any of those properties to set your needs. A popular option
 is to turn on automatic pinging so that Google is notified of any updates to
@@ -54,6 +55,7 @@ editing the `google_notification_enabled` option to true
   		objects_per_sitemap: 1000
   		google_notification_enabled: true
   		use_show_in_search: true
+  		set_change_frequency: false
 
 ### Including DataObjects
 
