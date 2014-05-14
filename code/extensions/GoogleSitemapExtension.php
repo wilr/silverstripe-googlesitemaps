@@ -78,6 +78,10 @@ class GoogleSitemapExtension extends DataExtension {
 	 * @return SS_Datetime
 	 */
 	public function getChangeFrequency() {
+		if($freq = Config::inst()->get('GoogleSitemap', 'set_change_frequency')) {
+			return $freq;
+		}
+
 		if($freq = GoogleSitemap::get_frequency_for_class($this->owner->class)) {
 			return $freq;
 		}
