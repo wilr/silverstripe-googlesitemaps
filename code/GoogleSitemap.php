@@ -271,10 +271,16 @@ class GoogleSitemap {
 
 			for($i = 1; $i <= $neededForPage; $i++) {
 				$sliced = $instances
-					->limit($countPerFile, ($i - 1) * $countPerFile)
-					->last();
+					->limit($countPerFile, ($i - 1) * $countPerFile);
+				$lastEdited = null;
 
-				$lastModified = ($sliced) ? $sliced->dbObject('LastEdited')->Format('Y-m-d') : date('Y-m-d');
+				foreach ($sliced as $page) {
+					if ($page->dbObject('LastEdited') > $lastEdited) {
+						$lastEdited = $page->dbObject('LastEdited');
+					}
+				}
+
+				$lastModified = ($lastEdited) ? $lastEdited->Format('Y-m-d') : date('Y-m-d');
 
 				$sitemaps->push(new ArrayData(array(
 					'ClassName' => 'SiteTree',
