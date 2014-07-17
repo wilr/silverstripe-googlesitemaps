@@ -392,65 +392,11 @@ class GoogleSitemap {
 	}
 
 	/**
-	 * Enable pings to google.com whenever sitemap changes.
-	 *
-	 * @return void
-	 */
-	public static function enable_google_notification() {
-		Deprecation::notice('1.1', 'GoogleSitemap::enable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'google_notification_enabled');
-		Config::inst()->update('GoogleSitemap', 'google_notification_enabled', true);
-	}
-	
-	/**
-	 * Disables pings to google when the sitemap changes.
-	 *
-	 * @deprecated 1.1
-	 * @return void
-	 */
-	public static function disable_google_notification() {
-		Deprecation::notice('1.1', 'GoogleSitemap::enable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'google_notification_enabled');
-		Config::inst()->update('GoogleSitemap', 'google_notification_enabled', false);
-	}
-	
-
-	/**
-	 * Enable Google Sitemap support. Requests to the sitemap.xml route will
-	 * result in an XML sitemap being provided.
-	 *
-	 * @deprecated 1.1
-	 * @return void
-	 */
-	public static function enable() {
-		Deprecation::notice('1.1', 'GoogleSitemap::enable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'enabled');
-		Config::inst()->update('GoogleSitemap', 'enabled', true);
-	}
-
-	/**
 	 * Is GoogleSitemap enabled?
 	 *
 	 * @return boolean
 	 */
 	public static function enabled() {
 		return (Config::inst()->get('GoogleSitemap', 'enabled', Config::INHERITED));
-	}
-	
-	/**
-	 * Disable Google Sitemap support. Any requests to the sitemap.xml route
-	 * will produce a 404 response.
-	 *
-	 * @deprecated 1,1
-	 * @return void
-	 */
-	public static function disable() {
-		Deprecation::notice('1.1', 'GoogleSitemap::disable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'enabled');
-		Config::inst()->update('GoogleSitemap', 'enabled', false);
-	}     
+	}  
 }
