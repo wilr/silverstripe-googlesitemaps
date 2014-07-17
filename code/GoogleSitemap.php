@@ -175,8 +175,15 @@ class GoogleSitemap {
 		$count = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
 		$filter =  Config::inst()->get('GoogleSitemap', 'use_show_in_search');
 
+		// todo migrate to extension hook or DI point for other modules to 
+		// modify state filters
+		if(class_exists('Translatable')) {
+			Translatable::disable_locale_filter();
+		}
+
 		if($class == "SiteTree") {
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
+
 			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
 		}
 		else if($class == "GoogleSitemapRoute") {
@@ -263,6 +270,12 @@ class GoogleSitemap {
 		$filter = Config::inst()->get('GoogleSitemap', 'use_show_in_search');
 
 		if(class_exists('SiteTree')) {
+			// move to extension hook. At the moment moduleexists config hook
+			// does not work.
+			if(class_exists('Translatable')) {
+				Translatable::disable_locale_filter();
+			}
+
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
 			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
 			$count = $instances->count();
