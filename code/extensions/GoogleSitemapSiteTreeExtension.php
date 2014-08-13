@@ -107,7 +107,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 		} else if ($priority == -1) {
 			return false;
 		} else {
-			return (is_float($priority) && $priority <= 1.0) ? $priority : 0.5;
+			return (is_numeric($priority) && $priority <= 1.0) ? $priority : 0.5;
 		}
 	}
 }
