@@ -92,17 +92,29 @@ class GoogleSitemapTest extends FunctionalTest {
 	} 
 
 	public function testLastModifiedDateOnRootXML() {
-		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+		Config::inst()->update('GoogleSitemap', 'enabled', true);
 
-		DB::query("
-			UPDATE GoogleSitemapTest_DataObject SET LastEdited = '2012-01-14'"
-		);
+		if(!class_exists('Page')) {
+			$this->markTestIncomplete('No cms module installed, page related test skipped');
+		}
+
+		$page = $this->objFromFixture('Page', 'Page1');
+		$page->publish('Stage', 'Live');
+		$page->flushCache();
+
+		$page2 = $this->objFromFixture('Page', 'Page2');
+		$page2->publish('Stage', 'Live');
+		$page2->flushCache();
+
+		DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-03-14 00:00:00' WHERE \"ID\"='".$page->ID."'");
+		DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-01-01 00:00:00' WHERE \"ID\"='".$page2->ID."'");
 
 		$response = $this->get('sitemap.xml');
 		$body = $response->getBody();
 
-		$expected = "<lastmod>2012-01-14</lastmod>";
-		$this->assertEquals(1, substr_count($body, $expected));
+		$expected = '<lastmod>2014-03-14</lastmod>';
+
+		$this->assertEquals(1, substr_count($body, $expected) , 'The last mod date should use most recent LastEdited date');
 	}
 
 	public function testIndexFilePaginatedSitemapFiles() {
@@ -227,6 +239,10 @@ class GoogleSitemapTest extends FunctionalTest {
 		// invalid field doesn't break google
 		$page->Priority = 'foo';
 		$this->assertEquals(0.5, $page->getGooglePriority());
+
+		// custom value (set as string as db field is varchar)
+		$page->Priority = '0.2';
+		$this->assertEquals(0.2, $page->getGooglePriority());
 		
 		// -1 indicates that we should not index this
 		$page->Priority = -1;
