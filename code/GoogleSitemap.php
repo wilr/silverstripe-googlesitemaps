@@ -202,6 +202,15 @@ class GoogleSitemap {
 
 			return $output;
 		}
+		else if (Object::has_extension($class, 'Versioned')) {
+			$table = singleton($class)->baseTable() . '_Live';
+			if (DB::getConn()->hasTable($table)) {
+				$instances = Versioned::get_by_stage($class, 'Live');
+			}
+			else {
+				$instances = new DataList($class);
+			}
+		}
 		else {
 			$instances = new DataList($class);
 		}
