@@ -1,0 +1,9 @@
+lt:
+  GoogleSitemaps:
+    METANOTEPRIORITY: 'Šio puslapio Google svetainės medžio prioriteto nustatymas (%s)'
+    METAPAGEPRIO: 'Puslapio prioritetas'
+    PRIORITYAUTOSET: 'Automatiškai nustatyti prioritetą pagal puslapio gylį'
+    PRIORITYLEASTIMPORTANT: 'Mažiausiai svarbus'
+    PRIORITYMOSTIMPORTANT: 'Labiausiai svarbus'
+    PRIORITYNOTINDEXED: 'Neindeksuojamas'
+    TABGOOGLESITEMAP: 'Google svetainės medis'
