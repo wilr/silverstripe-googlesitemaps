@@ -286,6 +286,7 @@ class GoogleSitemap {
 
 				$lastEdited = $instances
 					->limit($countPerFile, ($i - 1) * $countPerFile)
+					->sort(array())
 					->max('LastEdited');
 
 				$lastModified = ($lastEdited) ? date('Y-m-d', strtotime($lastEdited)) : date('Y-m-d');
