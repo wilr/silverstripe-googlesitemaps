@@ -6,9 +6,9 @@
       <head>
         <title>XML Sitemap</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="googlesitemaps/css/style.css" />
+        <link rel="stylesheet" href="../googlesitemaps/css/style.css" />
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-        <script type="text/javascript" src="googlesitemaps/javascript/jquery.tablesorter.min.js"></script>
+        <script type="text/javascript" src="../googlesitemaps/javascript/jquery.tablesorter.min.js"></script>
         <script type="text/javascript"><![CDATA[
           $(document).ready(function() {
                 $("#sitemapindex").tablesorter( { sortList: [[0,0]],widgets: ['zebra'] } );
