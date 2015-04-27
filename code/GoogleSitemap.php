@@ -16,10 +16,21 @@
  * By default, Google is not notified, and will pick up your new
  * sitemap whenever the GoogleBot visits your website.
  * 
- * Enabling notification of Google after every publish (in your _config.php):
+ * To Enable notification of Google after every publish set google_notification_enabled
+ * to true in the googlesitemaps.yml config file.
+ * This file is usually located in the _config folder of your project folder.
+ * e.g mysite/_config/googlesitemaps.yml
  *
  * <example>
- * GoogleSitemap::enable_google_notificaton();
+ *	---
+ *	Name: customgooglesitemaps
+ *	After: googlesitemaps
+ *	---
+ *	GoogleSitemap:
+ * 		enabled: true
+ * 		objects_per_sitemap: 1000
+ * 		google_notification_enabled: true
+ * 		use_show_in_search: true
  * </example>
  * 
  * @see http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=34609
