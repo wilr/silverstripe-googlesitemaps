@@ -4,14 +4,16 @@ language: php
 php: 
  - 5.3
 
+sudo: false
+
 env:
  - DB=MYSQL CORE_RELEASE=3.1
- - DB=PGSQL CORE_RELEASE=master
+ - DB=PGSQL CORE_RELEASE=3
 
 matrix:
   include:
     - php: 5.4
-      env: DB=MYSQL CORE_RELEASE=master
+      env: DB=MYSQL CORE_RELEASE=3
 
 before_script:
  - git clone git://github.com/silverstripe-labs/silverstripe-travis-support.git ~/travis-support
