@@ -89,7 +89,7 @@ class GoogleSitemapTest extends FunctionalTest {
 
 		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_UnviewableDataObject/2") ."</loc>";
 		$this->assertEquals(0, substr_count($body, $expected) , 'A link to a GoogleSitemapTest_UnviewableDataObject does not exist');
-	} 
+	}
 
 	public function testLastModifiedDateOnRootXML() {
 		Config::inst()->update('GoogleSitemap', 'enabled', true);
@@ -154,6 +154,19 @@ class GoogleSitemapTest extends FunctionalTest {
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
 
 		$response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+		$body = $response->getBody();
+
+		$this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
+
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+	}
+
+	public function testAccessingNestedSiteMapCaseInsensitive() {
+		$original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+
+		$response = $this->get('sitemap.xml/sitemap/googlesitemaptest_dataobject/1');
 		$body = $response->getBody();
 
 		$this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');

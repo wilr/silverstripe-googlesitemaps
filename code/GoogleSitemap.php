@@ -182,6 +182,15 @@ class GoogleSitemap {
 	 * @return ArrayList
 	 */
 	public static function get_items($class, $page = 1) {
+		//normalise the class name
+		try {
+			$reflectionClass = new ReflectionClass($class);
+			$class = $reflectionClass->getName();
+		} catch (ReflectionException $e) {
+			// this can happen when $class is GoogleSitemapRoute
+			//we should try to carry on
+		}
+
 		$output = new ArrayList();
 		$count = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
 		$filter =  Config::inst()->get('GoogleSitemap', 'use_show_in_search');
