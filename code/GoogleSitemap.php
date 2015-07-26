@@ -16,10 +16,21 @@
  * By default, Google is not notified, and will pick up your new
  * sitemap whenever the GoogleBot visits your website.
  * 
- * Enabling notification of Google after every publish (in your _config.php):
+ * To Enable notification of Google after every publish set google_notification_enabled
+ * to true in the googlesitemaps.yml config file.
+ * This file is usually located in the _config folder of your project folder.
+ * e.g mysite/_config/googlesitemaps.yml
  *
  * <example>
- * GoogleSitemap::enable_google_notificaton();
+ *	---
+ *	Name: customgooglesitemaps
+ *	After: googlesitemaps
+ *	---
+ *	GoogleSitemap:
+ * 		enabled: true
+ * 		objects_per_sitemap: 1000
+ * 		google_notification_enabled: true
+ * 		use_show_in_search: true
  * </example>
  * 
  * @see http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=34609
@@ -60,7 +71,7 @@ class GoogleSitemap {
 	 */
 	public static function register_dataobject($className, $changeFreq = 'monthly', $priority = '0.6') {
 		if (!self::is_registered($className)) {
-			Object::add_extension($className, 'GoogleSitemapExtension');
+			$className::add_extension('GoogleSitemapExtension');
 			
 			self::$dataobjects[$className] = array(
 				'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
@@ -171,12 +182,28 @@ class GoogleSitemap {
 	 * @return ArrayList
 	 */
 	public static function get_items($class, $page = 1) {
+		//normalise the class name
+		try {
+			$reflectionClass = new ReflectionClass($class);
+			$class = $reflectionClass->getName();
+		} catch (ReflectionException $e) {
+			// this can happen when $class is GoogleSitemapRoute
+			//we should try to carry on
+		}
+
 		$output = new ArrayList();
 		$count = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
 		$filter =  Config::inst()->get('GoogleSitemap', 'use_show_in_search');
 
+		// todo migrate to extension hook or DI point for other modules to 
+		// modify state filters
+		if(class_exists('Translatable')) {
+			Translatable::disable_locale_filter();
+		}
+
 		if($class == "SiteTree") {
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
+
 			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
 		}
 		else if($class == "GoogleSitemapRoute") {
@@ -263,6 +290,12 @@ class GoogleSitemap {
 		$filter = Config::inst()->get('GoogleSitemap', 'use_show_in_search');
 
 		if(class_exists('SiteTree')) {
+			// move to extension hook. At the moment moduleexists config hook
+			// does not work.
+			if(class_exists('Translatable')) {
+				Translatable::disable_locale_filter();
+			}
+
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
 			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
 			$count = $instances->count();
@@ -270,11 +303,13 @@ class GoogleSitemap {
 			$neededForPage = ceil($count / $countPerFile);
 
 			for($i = 1; $i <= $neededForPage; $i++) {
-				$sliced = $instances
-					->limit($countPerFile, ($i - 1) * $countPerFile)
-					->last();
 
-				$lastModified = ($sliced) ? $sliced->dbObject('LastEdited')->Format('Y-m-d') : date('Y-m-d');
+				$lastEdited = $instances
+					->limit($countPerFile, ($i - 1) * $countPerFile)
+					->sort(array())
+					->max('LastEdited');
+
+				$lastModified = ($lastEdited) ? date('Y-m-d', strtotime($lastEdited)) : date('Y-m-d');
 
 				$sitemaps->push(new ArrayData(array(
 					'ClassName' => 'SiteTree',
@@ -379,65 +414,11 @@ class GoogleSitemap {
 	}
 
 	/**
-	 * Enable pings to google.com whenever sitemap changes.
-	 *
-	 * @return void
-	 */
-	public static function enable_google_notification() {
-		Deprecation::notice('1.1', 'GoogleSitemap::enable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'google_notification_enabled');
-		Config::inst()->update('GoogleSitemap', 'google_notification_enabled', true);
-	}
-	
-	/**
-	 * Disables pings to google when the sitemap changes.
-	 *
-	 * @deprecated 1.1
-	 * @return void
-	 */
-	public static function disable_google_notification() {
-		Deprecation::notice('1.1', 'GoogleSitemap::enable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'google_notification_enabled');
-		Config::inst()->update('GoogleSitemap', 'google_notification_enabled', false);
-	}
-	
-
-	/**
-	 * Enable Google Sitemap support. Requests to the sitemap.xml route will
-	 * result in an XML sitemap being provided.
-	 *
-	 * @deprecated 1.1
-	 * @return void
-	 */
-	public static function enable() {
-		Deprecation::notice('1.1', 'GoogleSitemap::enable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'enabled');
-		Config::inst()->update('GoogleSitemap', 'enabled', true);
-	}
-
-	/**
 	 * Is GoogleSitemap enabled?
 	 *
 	 * @return boolean
 	 */
 	public static function enabled() {
 		return (Config::inst()->get('GoogleSitemap', 'enabled', Config::INHERITED));
-	}
-	
-	/**
-	 * Disable Google Sitemap support. Any requests to the sitemap.xml route
-	 * will produce a 404 response.
-	 *
-	 * @deprecated 1,1
-	 * @return void
-	 */
-	public static function disable() {
-		Deprecation::notice('1.1', 'GoogleSitemap::disable() is deprecated. Please use Config API instead. See documentation.');
-
-		Config::inst()->remove('GoogleSitemap', 'enabled');
-		Config::inst()->update('GoogleSitemap', 'enabled', false);
-	}     
+	}  
 }

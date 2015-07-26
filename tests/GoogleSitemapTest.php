@@ -89,20 +89,32 @@ class GoogleSitemapTest extends FunctionalTest {
 
 		$expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_UnviewableDataObject/2") ."</loc>";
 		$this->assertEquals(0, substr_count($body, $expected) , 'A link to a GoogleSitemapTest_UnviewableDataObject does not exist');
-	} 
+	}
 
 	public function testLastModifiedDateOnRootXML() {
-		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+		Config::inst()->update('GoogleSitemap', 'enabled', true);
 
-		DB::query("
-			UPDATE GoogleSitemapTest_DataObject SET LastEdited = '2012-01-14'"
-		);
+		if(!class_exists('Page')) {
+			$this->markTestIncomplete('No cms module installed, page related test skipped');
+		}
+
+		$page = $this->objFromFixture('Page', 'Page1');
+		$page->publish('Stage', 'Live');
+		$page->flushCache();
+
+		$page2 = $this->objFromFixture('Page', 'Page2');
+		$page2->publish('Stage', 'Live');
+		$page2->flushCache();
+
+		DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-03-14 00:00:00' WHERE \"ID\"='".$page->ID."'");
+		DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-01-01 00:00:00' WHERE \"ID\"='".$page2->ID."'");
 
 		$response = $this->get('sitemap.xml');
 		$body = $response->getBody();
 
-		$expected = "<lastmod>2012-01-14</lastmod>";
-		$this->assertEquals(1, substr_count($body, $expected));
+		$expected = '<lastmod>2014-03-14</lastmod>';
+
+		$this->assertEquals(1, substr_count($body, $expected) , 'The last mod date should use most recent LastEdited date');
 	}
 
 	public function testIndexFilePaginatedSitemapFiles() {
@@ -142,6 +154,19 @@ class GoogleSitemapTest extends FunctionalTest {
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
 
 		$response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+		$body = $response->getBody();
+
+		$this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
+
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+	}
+
+	public function testAccessingNestedSiteMapCaseInsensitive() {
+		$original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
+		Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
+		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+
+		$response = $this->get('sitemap.xml/sitemap/googlesitemaptest_dataobject/1');
 		$body = $response->getBody();
 
 		$this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
@@ -227,10 +252,46 @@ class GoogleSitemapTest extends FunctionalTest {
 		// invalid field doesn't break google
 		$page->Priority = 'foo';
 		$this->assertEquals(0.5, $page->getGooglePriority());
+
+		// custom value (set as string as db field is varchar)
+		$page->Priority = '0.2';
+		$this->assertEquals(0.2, $page->getGooglePriority());
 		
 		// -1 indicates that we should not index this
 		$page->Priority = -1;
 		$this->assertFalse($page->getGooglePriority());
+	}
+	
+	public function testUnpublishedPage() {
+		
+		if(!class_exists('SiteTree')) {
+			$this->markTestSkipped('Test skipped; CMS module required for testUnpublishedPage');
+		}
+		
+		$orphanedPage = new SiteTree();
+		$orphanedPage->ParentID = 999999; // missing parent id
+		$orphanedPage->write();
+		$orphanedPage->publish("Stage", "Live");
+		
+		$rootPage = new SiteTree();
+		$rootPage->ParentID = 0;
+		$rootPage->write();
+		$rootPage->publish("Stage", "Live");
+		
+		$oldMode = Versioned::get_reading_mode();
+		Versioned::reading_stage('Live');
+		
+		try {
+			$this->assertEmpty($orphanedPage->hasPublishedParent());
+			$this->assertEmpty($orphanedPage->canIncludeInGoogleSitemap());
+			$this->assertNotEmpty($rootPage->hasPublishedParent());
+			$this->assertNotEmpty($rootPage->canIncludeInGoogleSitemap());
+		} catch(Exception $ex) {
+			Versioned::set_reading_mode($oldMode);
+			throw $ex;
+		} // finally {
+			Versioned::set_reading_mode($oldMode);
+		// }
 	}
 }
 
@@ -249,7 +310,7 @@ class GoogleSitemapTest_DataObject extends DataObject implements TestOnly {
 	}
 
 	public function AbsoluteLink() {
-		return Director::baseURL();
+		return Director::absoluteBaseURL();
 	}
 }
 
@@ -268,7 +329,7 @@ class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly {
 	}
 
 	public function AbsoluteLink() {
-		return Director::baseURL();
+		return Director::absoluteBaseURL();
 	}
 }
 
@@ -287,6 +348,6 @@ class GoogleSitemapTest_UnviewableDataObject extends DataObject implements TestO
 	}
 
 	public function AbsoluteLink() {
-		return Director::baseURL();
+		return Director::absoluteBaseURL();
 	}
 }

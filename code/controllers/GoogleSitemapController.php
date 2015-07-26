@@ -17,7 +17,7 @@ class GoogleSitemapController extends Controller {
 	/**
 	 * @var array
 	 */
-	public static $allowed_actions = array(
+	private static $allowed_actions = array(
 		'index',
 		'sitemap'	
 	);
@@ -30,9 +30,10 @@ class GoogleSitemapController extends Controller {
 	 */
 	public function index($url) {
 		if(GoogleSitemap::enabled()) {
-			SSViewer::set_source_file_comments(false);
+			Config::inst()->update('SSViewer', 'set_source_file_comments', false);
 			
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
+			$this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
 
 			$sitemaps = GoogleSitemap::get_sitemaps();
 			$this->extend('updateGoogleSitemaps', $sitemaps);
@@ -56,9 +57,10 @@ class GoogleSitemapController extends Controller {
 		$page = $this->request->param('OtherID');
 
 		if(GoogleSitemap::enabled() && $class && $page) {
-			SSViewer::set_source_file_comments(false);
+			Config::inst()->update('SSViewer', 'set_source_file_comments', false);
 			
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
+			$this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
 
 			$items = GoogleSitemap::get_items($class, $page);
 			$this->extend('updateGoogleSitemapItems', $items, $class, $page);

@@ -1,5 +1,7 @@
 # Google Sitemaps Module
 
+[![Build Status](https://secure.travis-ci.org/silverstripe-labs/silverstripe-googlesitemaps.png?branch=master)](http://travis-ci.org/silverstripe-labs/silverstripe-googlesitemaps)
+
 ## Maintainer Contact
 
 * Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
@@ -17,6 +19,8 @@ information on your site to be discovered by Google quickly.
 
 Therefore, all Silverstripe websites contain a special controller which can 
 be visited: http://yoursite.com/sitemap.xml
+
+Flush this route to ensure the changes take effect with: http://yoursite.com/sitemap.xml?flush=1
 
 See http://en.wikipedia.org/wiki/Sitemaps for info on this format.
 

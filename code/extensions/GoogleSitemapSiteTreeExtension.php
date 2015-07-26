@@ -8,7 +8,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 	/**
 	 * @var array
 	 */
-	public static $db = array(
+	private static $db = array(
 		"Priority" => "Varchar(5)"
 	);
 
@@ -56,13 +56,35 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 
 		$labels['Priority'] = _t('GoogleSitemaps.METAPAGEPRIO', "Page Priority");
 	}
+	
+	/**
+	 * Ensure that all parent pages of this page (if any) are published
+	 * 
+	 * @return boolean
+	 */
+	public function hasPublishedParent() {
+		
+		// Skip root pages
+		if(empty($this->owner->ParentID)) return true;
+		
+		// Ensure direct parent exists
+		$parent = $this->owner->Parent();
+		if(empty($parent) || !$parent->exists()) return false;
+		
+		// Check ancestry
+		return $parent->hasPublishedParent();
+	}
 
 	/**
 	 * @return boolean
 	 */
 	public function canIncludeInGoogleSitemap() {
+		
+		// Check that parent page is published
+		if(!$this->owner->hasPublishedParent()) return false;
+		
 		$result = parent::canIncludeInGoogleSitemap();
-		$result = ($this instanceof ErrorPage) ? false : $result;
+		$result = ($this->owner instanceof ErrorPage) ? false : $result;
 
 		return $result;
 	}
@@ -71,6 +93,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 	 * @return mixed
 	 */
 	public function getGooglePriority() {
+		setlocale(LC_ALL, "en_US.UTF8");
 		$priority = $this->owner->getField('Priority');
 
 		if(!$priority) {
@@ -84,7 +107,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension {
 		} else if ($priority == -1) {
 			return false;
 		} else {
-			return (is_float($priority) && $priority <= 1.0) ? $priority : 0.5;
+			return (is_numeric($priority) && $priority <= 1.0) ? $priority : 0.5;
 		}
 	}
 }
