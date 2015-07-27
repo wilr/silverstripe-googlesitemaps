@@ -8,7 +8,11 @@
 
 ## Requirements
 
-* SilverStripe 3.0
+* SilverStripe 3.1
+
+## Installation
+
+> composer require "silverstripe/googlesitemaps"
 
 ## Documentation
 
