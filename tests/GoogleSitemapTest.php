@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * TODO: Migrate to new instance level interface instead of using static methods for retrieval of site maps and items (i.e. ->getSitemaps() instead of ::get_sitemaps()).
+ *
  * @package googlesitemaps
  * @subpackage tests
  */

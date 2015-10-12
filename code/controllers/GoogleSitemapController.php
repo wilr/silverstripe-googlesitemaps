@@ -22,6 +22,7 @@ class GoogleSitemapController extends Controller {
 		'sitemap'	
 	);
 
+
 	/**
 	 * Default controller action for the sitemap.xml file. Renders a index
 	 * file containing a list of links to sub sitemaps containing the data.
@@ -35,7 +36,7 @@ class GoogleSitemapController extends Controller {
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 			$this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
 
-			$sitemaps = GoogleSitemap::get_sitemaps();
+			$sitemaps = GoogleSitemap::inst()->getSitemaps();
 			$this->extend('updateGoogleSitemaps', $sitemaps);
 
 			return array(
@@ -62,7 +63,7 @@ class GoogleSitemapController extends Controller {
 			$this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
 			$this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
 
-			$items = GoogleSitemap::get_items($class, $page);
+			$items = GoogleSitemap::inst()->getItems($class, $page);
 			$this->extend('updateGoogleSitemapItems', $items, $class, $page);
 
 			return array(

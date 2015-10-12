@@ -37,7 +37,7 @@
  * 
  * @package googlesitemaps
  */
-class GoogleSitemap {
+class GoogleSitemap extends Object {
 
 	/**
 	 * List of {@link DataObject} class names to include. As well as the change
@@ -181,7 +181,7 @@ class GoogleSitemap {
 	 *
 	 * @return ArrayList
 	 */
-	public static function get_items($class, $page = 1) {
+	public function getItems($class, $page = 1) {
 		//normalise the class name
 		try {
 			$reflectionClass = new ReflectionClass($class);
@@ -203,8 +203,8 @@ class GoogleSitemap {
 
 		if($class == "SiteTree") {
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
-
 			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
+			$this->extend("alterDataList", $instances, $class);
 		}
 		else if($class == "GoogleSitemapRoute") {
 			$instances = array_slice(self::$routes, ($page - 1) * $count, $count);
@@ -241,7 +241,21 @@ class GoogleSitemap {
 
 		return $output;
 	}
-	
+
+	/**
+	 * Static interface to instance level ->getItems() for backward compatibility.
+	 *
+	 * @param string
+	 * @param int
+	 *
+	 * @return ArrayList
+	 * @deprecated Please create an instance and call ->getSitemaps() instead.
+	 */
+	public static function get_items($class, $page = 1) {
+		return static::inst()->getItems($class, $page);
+	}
+
+
 	/**
 	 * Returns the string frequency of edits for a particular dataobject class.
 	 * 
@@ -258,6 +272,8 @@ class GoogleSitemap {
 				return $config['frequency'];
 			}
 		}
+
+		return '';
 	}
 
 	/**
@@ -284,7 +300,7 @@ class GoogleSitemap {
 	 *
 	 * @return ArrayList
 	 */
-	public static function get_sitemaps() {
+	public function getSitemaps() {
 		$countPerFile = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
 		$sitemaps = new ArrayList();
 		$filter = Config::inst()->get('GoogleSitemap', 'use_show_in_search');
@@ -297,7 +313,9 @@ class GoogleSitemap {
 			}
 
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
-			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
+			$class = 'SiteTree';
+			$instances = Versioned::get_by_stage($class, 'Live', $filter);
+			$this->extend("alterDataList", $instances, $class);
 			$count = $instances->count();
 
 			$neededForPage = ceil($count / $countPerFile);
@@ -355,6 +373,16 @@ class GoogleSitemap {
 		}
 
 		return $sitemaps;
+	}
+
+	/**
+	 * Static interface to instance level ->getSitemaps() for backward compatibility.
+	 *
+	 * @return ArrayList
+	 * @deprecated Please create an instance and call ->getSitemaps() instead.
+	 */
+	public static function get_sitemaps() {
+		return static::inst()->getSitemaps();
 	}
 
 	/**
@@ -420,5 +448,16 @@ class GoogleSitemap {
 	 */
 	public static function enabled() {
 		return (Config::inst()->get('GoogleSitemap', 'enabled', Config::INHERITED));
-	}  
+	}
+
+
+	/**
+	 * Convenience method for manufacturing an instance for hew instance-level methods (and for easier type definition).
+	 *
+	 * @return GoogleSitemap
+	 */
+	public static function inst() {
+		return GoogleSitemap::create();
+	}
+
 }
