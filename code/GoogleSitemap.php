@@ -204,7 +204,6 @@ class GoogleSitemap extends Object {
 		if($class == "SiteTree") {
 			$filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
 			$instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
-			$this->extend("alterDataList", $instances, $class);
 		}
 		else if($class == "GoogleSitemapRoute") {
 			$instances = array_slice(self::$routes, ($page - 1) * $count, $count);
@@ -225,6 +224,8 @@ class GoogleSitemap extends Object {
 		else {
 			$instances = new DataList($class);
 		}
+
+		$this->extend("alterDataList", $instances, $class);
 
 		$instances = $instances->limit(
 			$count, 
@@ -341,7 +342,7 @@ class GoogleSitemap extends Object {
 			foreach(self::$dataobjects as $class => $config) {
 				$list = new DataList($class);
 				$list = $list->sort('LastEdited ASC');
-				
+				$this->extend("alterDataList", $list, $class);
 				$neededForClass = ceil($list->count() / $countPerFile);
 
 				for($i = 1; $i <= $neededForClass; $i++) {
