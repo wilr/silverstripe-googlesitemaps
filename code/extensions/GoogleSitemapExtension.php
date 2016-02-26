@@ -33,7 +33,13 @@ class GoogleSitemapExtension extends DataExtension
             $can = $this->owner->getGooglePriority();
         }
 
-        $this->owner->invokeWithExtensions('alterCanIncludeInGoogleSitemap', $can);
+        // Allow override. In this case, since this can return multiple results, we'll use an "and" based policy. That is
+        // if any value is false then the current value will be false. Only only if all are true will we then return true.
+        $override = $this->owner->invokeWithExtensions('alterCanIncludeInGoogleSitemap', $can);
+        if ($override) {
+            $can = min($override);
+        }
+
 
         return $can;
     }
