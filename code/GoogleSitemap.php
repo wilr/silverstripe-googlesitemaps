@@ -1,21 +1,21 @@
 <?php
 /**
- * Sitemaps are a way to tell Google about pages on your site that they might 
- * not otherwise discover. In its simplest terms, a XML Sitemap usually called 
- * a Sitemap, with a capital S—is a list of the pages on your website. 
- * 
- * Creating and submitting a Sitemap helps make sure that Google knows about 
- * all the  pages on your site, including URLs that may not be discoverable by 
+ * Sitemaps are a way to tell Google about pages on your site that they might
+ * not otherwise discover. In its simplest terms, a XML Sitemap usually called
+ * a Sitemap, with a capital S—is a list of the pages on your website.
+ *
+ * Creating and submitting a Sitemap helps make sure that Google knows about
+ * all the  pages on your site, including URLs that may not be discoverable by
  * Google's normal crawling process.
- * 
+ *
  * The GoogleSitemap handle requests to 'sitemap.xml'
  * the other two classes are used to render the sitemap.
- * 
+ *
  * You can notify ("ping") Google about a changed sitemap
  * automatically whenever a new page is published or unpublished.
  * By default, Google is not notified, and will pick up your new
  * sitemap whenever the GoogleBot visits your website.
- * 
+ *
  * To Enable notification of Google after every publish set google_notification_enabled
  * to true in the googlesitemaps.yml config file.
  * This file is usually located in the _config folder of your project folder.
@@ -32,9 +32,9 @@
  * 		google_notification_enabled: true
  * 		use_show_in_search: true
  * </example>
- * 
+ *
  * @see http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=34609
- * 
+ *
  * @package googlesitemaps
  */
 class GoogleSitemap extends Object
@@ -57,6 +57,13 @@ class GoogleSitemap extends Object
     private static $routes = array();
 
     /**
+     * @config
+     *
+     * @var boolean
+     */
+    private static $exclude_redirector_pages = true;
+
+    /**
      * Decorates the given DataObject with {@link GoogleSitemapDecorator}
      * and pushes the class name to the registered DataObjects.
      * Note that all registered DataObjects need the method AbsoluteLink().
@@ -74,14 +81,14 @@ class GoogleSitemap extends Object
     {
         if (!self::is_registered($className)) {
             $className::add_extension('GoogleSitemapExtension');
-            
+
             self::$dataobjects[$className] = array(
                 'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
                 'priority' => ($priority) ? $priority : '0.6'
             );
         }
     }
-    
+
     /**
      * Registers multiple dataobjects in a single line. See {@link register_dataobject}
      * for the heavy lifting
@@ -106,14 +113,14 @@ class GoogleSitemap extends Object
      * Checks whether the given class name is already registered or not.
      *
      * @param string $className Name of DataObject to check
-     * 
+     *
      * @return bool
      */
     public static function is_registered($className)
     {
         return isset(self::$dataobjects[$className]);
     }
-    
+
     /**
      * Unregisters a class from the sitemap. Mostly used for the test suite
      *
@@ -204,16 +211,24 @@ class GoogleSitemap extends Object
         $output = new ArrayList();
         $count = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
         $filter =  Config::inst()->get('GoogleSitemap', 'use_show_in_search');
+        $redirector =  Config::inst()->get('GoogleSitemap', 'exclude_redirector_pages');
 
-        // todo migrate to extension hook or DI point for other modules to 
+        // todo migrate to extension hook or DI point for other modules to
         // modify state filters
         if (class_exists('Translatable')) {
             Translatable::disable_locale_filter();
         }
 
         if ($class == "SiteTree") {
-            $filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
-            $instances = Versioned::get_by_stage('SiteTree', 'Live', $filter);
+            $instances = Versioned::get_by_stage('SiteTree', 'Live');
+
+            if($filter) {
+                $instances = $instances->filter('ShowInSearch', 1);
+            }
+
+            if($redirector) {
+                $instances = $instances->exclude('ClassName', 'RedirectorPage');
+            }
         } elseif ($class == "GoogleSitemapRoute") {
             $instances = array_slice(self::$routes, ($page - 1) * $count, $count);
             $output = new ArrayList();
@@ -268,7 +283,7 @@ class GoogleSitemap extends Object
 
     /**
      * Returns the string frequency of edits for a particular dataobject class.
-     * 
+     *
      * Frequency for {@link SiteTree} objects can be determined from the version
      * history.
      *
@@ -289,7 +304,7 @@ class GoogleSitemap extends Object
 
     /**
      * Returns the default priority of edits for a particular dataobject class.
-     * 
+     *
      * @param string
      *
      * @return float
@@ -306,7 +321,7 @@ class GoogleSitemap extends Object
     }
 
     /**
-     * The google site map is broken down into multiple smaller files to 
+     * The google site map is broken down into multiple smaller files to
      * prevent overbearing a server. By default separate {@link DataObject}
      * records are keep in separate files and broken down into chunks.
      *
@@ -399,15 +414,15 @@ class GoogleSitemap extends Object
     }
 
     /**
-     * Notifies Google about changes to your sitemap. This behavior is disabled 
+     * Notifies Google about changes to your sitemap. This behavior is disabled
      * by default, to enable, read the documentation provided in the docs folder.
      *
      * After notifications have been enabled, every publish / unpublish of a page.
      * will notify Google of the update.
-     * 
+     *
      * If the site is in development mode no ping will be sent regardless whether
      * the Google notification is enabled.
-     * 
+     *
      * @return string Response text
      */
     public static function ping()
@@ -415,19 +430,19 @@ class GoogleSitemap extends Object
         if (!self::enabled()) {
             return false;
         }
-        
+
         // Don't ping if the site has disabled it, or if the site is in dev mode
         $active = Config::inst()->get('GoogleSitemap', 'google_notification_enabled');
 
         if (!$active || Director::isDev()) {
             return;
         }
-        
+
         $location = urlencode(Controller::join_links(
             Director::absoluteBaseURL(),
             'sitemap.xml'
         ));
-        
+
         $response = self::send_ping(
             "www.google.com", "/webmasters/sitemaps/ping", sprintf("sitemap=%s", $location)
         );
