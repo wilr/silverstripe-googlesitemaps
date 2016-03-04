@@ -1,7 +1,7 @@
 # See https://github.com/silverstripe-labs/silverstripe-travis-support for setup details
 
-language: php 
-php: 
+language: php
+php:
  - 5.3
 
 sudo: false
@@ -16,9 +16,11 @@ matrix:
       env: DB=MYSQL CORE_RELEASE=3
 
 before_script:
+ - phpenv rehash
+ - composer self-update
  - git clone git://github.com/silverstripe-labs/silverstripe-travis-support.git ~/travis-support
- - php ~/travis-support/travis_setup.php --source `pwd` --target ~/builds/ss
+ - php ~/travis-support/travis_setup.php --source `pwd` --target ~/builds/ss --require silverstripe/cms:~3.1
  - cd ~/builds/ss
 
-script: 
+script:
  - phpunit googlesitemaps/tests/
