@@ -380,7 +380,7 @@ class GoogleSitemap extends Object
                     $lastModified = ($sliced) ? $sliced->dbObject('LastEdited')->Format('Y-m-d') : date('Y-m-d');
 
                     $sitemaps->push(new ArrayData(array(
-                        'ClassName' => $class,
+                        'ClassName' => $this->sanitiseClassName($class),
                         'Page' => $i,
                         'LastModified' => $lastModified
                     )));
@@ -490,5 +490,14 @@ class GoogleSitemap extends Object
     public static function inst()
     {
         return GoogleSitemap::create();
+    }
+
+    /**
+     * Sanitise a namespaced class' name for inclusion in a link
+     * @return string
+     */
+    protected function sanitiseClassName($class)
+    {
+        return str_replace('\\', '-', $class);
     }
 }
