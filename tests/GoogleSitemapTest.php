@@ -14,7 +14,8 @@ class GoogleSitemapTest extends FunctionalTest
     protected $extraDataObjects = array(
         'GoogleSitemapTest_DataObject',
         'GoogleSitemapTest_OtherDataObject',
-        'GoogleSitemapTest_UnviewableDataObject'
+        'GoogleSitemapTest_UnviewableDataObject',
+        'SilverStripe\GoogleSitemaps\Test_DataObject',
     );
 
     public function setUp()
@@ -181,6 +182,34 @@ class GoogleSitemapTest extends FunctionalTest
         GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
 
         $response = $this->get('sitemap.xml/sitemap/googlesitemaptest_dataobject/1');
+        $body = $response->getBody();
+
+        $this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
+
+        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+    }
+
+    public function testAccessingNestedNamespacedSiteMap()
+    {
+        $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
+        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
+        GoogleSitemap::register_dataobject("SilverStripe\\GoogleSitemaps\\Test_DataObject");
+
+        $response = $this->get('sitemap.xml/sitemap/SilverStripe-GoogleSitemaps-Test_DataObject/1');
+        $body = $response->getBody();
+
+        $this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
+
+        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+    }
+
+    public function testAccessingNestedNamespacedSiteMapCaseInsensitive()
+    {
+        $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
+        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
+        GoogleSitemap::register_dataobject("SilverStripe\\GoogleSitemaps\\Test_DataObject");
+
+        $response = $this->get('sitemap.xml/sitemap/silverstripe-googlesitemaps-test_dataobject/1');
         $body = $response->getBody();
 
         $this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
