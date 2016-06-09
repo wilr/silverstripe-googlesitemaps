@@ -227,7 +227,9 @@ class GoogleSitemap extends Object
             }
 
             if($redirector) {
-                $instances = $instances->exclude('ClassName', 'RedirectorPage');
+                foreach (ClassInfo::subclassesFor('RedirectorPage') as $redirectorClass) {
+                    $instances = $instances->exclude('ClassName', $redirectorClass);
+                }
             }
         } elseif ($class == "GoogleSitemapRoute") {
             $instances = array_slice(self::$routes, ($page - 1) * $count, $count);
