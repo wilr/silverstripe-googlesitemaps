@@ -1,0 +1,10 @@
+
+ru:
+  GoogleSitemaps:
+    METANOTEPRIORITY: 'Установить вручную Google Sitemaps приоритет для этой страшицы (%s)'
+    METAPAGEPRIO: 'Приоритет страницы'
+    PRIORITYAUTOSET: 'Автоматичисеки на основании глубины просмотра'
+    PRIORITYLEASTIMPORTANT: 'Наименее важная'
+    PRIORITYMOSTIMPORTANT: 'Наиболее Важная'
+    PRIORITYNOTINDEXED: 'Не индексировать'
+    TABGOOGLESITEMAP: 'Google Sitemap'
