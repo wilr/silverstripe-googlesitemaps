@@ -118,7 +118,13 @@ class GoogleSitemap extends Object
      */
     public static function is_registered($className)
     {
-        return isset(self::$dataobjects[$className]);
+        if (!isset(self::$dataobjects[$className])) {
+            $lowerKeys = array_change_key_case(self::$dataobjects);
+            
+            return isset($lowerKeys[$className]);
+        }
+        
+        return true;
     }
 
     /**
