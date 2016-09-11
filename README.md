@@ -1,6 +1,6 @@
 # Google Sitemaps Module
 
-[![Build Status](https://secure.travis-ci.org/silverstripe-labs/silverstripe-googlesitemaps.png?branch=master)](http://travis-ci.org/silverstripe-labs/silverstripe-googlesitemaps)
+[![Build Status](https://secure.travis-ci.org/wilr/silverstripe-googlesitemaps.png?branch=master)](http://travis-ci.org/wilr/silverstripe-googlesitemaps)
 
 ## Maintainer Contact
 
