@@ -12,23 +12,24 @@
 
 ## Installation
 
-> composer require "silverstripe/googlesitemaps"
+> composer require "wilr/googlesitemaps"
 
 ## Documentation
 
-SilverStripe provides support for the Google Sitemaps XML system, enabling 
-Google and other search engines to see all urls on your site. This helps 
-your SilverStripe website rank well in search engines, and to encourage the 
-information on your site to be discovered by Google quickly.
+Provides support for the [Sitemaps XML Protocol](http://www.sitemaps.org/protocol.html),
+enabling Google, Bing and other search engines to index the web pages on your
+site. This helps your SilverStripe website rank well in search engines, and to
+encourage the information on your site to be discovered by Google quickly.
 
-Therefore, all Silverstripe websites contain a special controller which can 
-be visited: http://yoursite.com/sitemap.xml
+Any new pages published or unpublished on your website automatically update the
+Sitemap.
 
-Flush this route to ensure the changes take effect with: http://yoursite.com/sitemap.xml?flush=1
-
-See http://en.wikipedia.org/wiki/Sitemaps for info on this format.
+The XML Sitemap can be accessed by going to http://yoursite.com/sitemap.xml
 
 ## Usage Overview
 
 See docs/en for more information about configuring the module.
-	
+
+## Troubleshooting
+
+* Flush this route to ensure the changes take effect (e.g http://yoursite.com/sitemap.xml?flush=1)

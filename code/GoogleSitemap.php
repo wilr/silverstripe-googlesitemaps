@@ -120,10 +120,10 @@ class GoogleSitemap extends Object
     {
         if (!isset(self::$dataobjects[$className])) {
             $lowerKeys = array_change_key_case(self::$dataobjects);
-            
+
             return isset($lowerKeys[$className]);
         }
-        
+
         return true;
     }
 
@@ -431,7 +431,7 @@ class GoogleSitemap extends Object
      * If the site is in development mode no ping will be sent regardless whether
      * the Google notification is enabled.
      *
-     * @return string Response text
+     * @return boolean
      */
     public static function ping()
     {
@@ -443,7 +443,7 @@ class GoogleSitemap extends Object
         $active = Config::inst()->get('GoogleSitemap', 'google_notification_enabled');
 
         if (!$active || Director::isDev()) {
-            return;
+            return false;
         }
 
         $location = urlencode(Controller::join_links(
@@ -451,11 +451,20 @@ class GoogleSitemap extends Object
             'sitemap.xml'
         ));
 
-        $response = self::send_ping(
+        $googleResponse = self::send_ping(
             "www.google.com", "/webmasters/sitemaps/ping", sprintf("sitemap=%s", $location)
         );
 
-        return $response;
+        // bing
+        $bing = Config::inst()->get('GoogleSitemap', 'bing_notification_enabled');
+
+        if($bing) {
+            $bingResponse = self::send_ping(
+                "www.bing.com", "/ping", sprintf("sitemap=%s", $location)
+            );
+        }
+
+        return true;
     }
 
     /**
@@ -491,7 +500,8 @@ class GoogleSitemap extends Object
 
 
     /**
-     * Convenience method for manufacturing an instance for hew instance-level methods (and for easier type definition).
+     * Convenience method for manufacturing an instance for hew instance-level
+     * methods (and for easier type definition).
      *
      * @return GoogleSitemap
      */

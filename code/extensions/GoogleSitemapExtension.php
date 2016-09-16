@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Decorate the page object to provide google sitemaps with 
+ * Decorate the page object to provide google sitemaps with
  * additionally options and configuration.
- * 
+ *
  * @package googlesitemaps
  */
 class GoogleSitemapExtension extends DataExtension
@@ -24,7 +24,7 @@ class GoogleSitemapExtension extends DataExtension
                 $can = false;
             }
         }
-        
+
         if ($can) {
             $can = $this->owner->canView();
         }
@@ -80,10 +80,10 @@ class GoogleSitemapExtension extends DataExtension
     }
 
     /**
-     * Returns a pages change frequency calculated by pages age and number of 
-     * versions. Google expects always, hourly, daily, weekly, monthly, yearly 
+     * Returns a pages change frequency calculated by pages age and number of
+     * versions. Google expects always, hourly, daily, weekly, monthly, yearly
      * or never as values.
-     * 
+     *
      * @see http://support.google.com/webmasters/bin/answer.py?hl=en&answer=183668&topic=8476&ctx=topic
      *
      * @return SS_Datetime
@@ -101,7 +101,7 @@ class GoogleSitemapExtension extends DataExtension
 
         $now = new SS_Datetime();
         $now->value = $date;
-        
+
         $versions = ($this->owner->Version) ? $this->owner->Version : 1;
         $timediff = $now->format('U') - $created->format('U');
 
