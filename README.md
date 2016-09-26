@@ -12,7 +12,7 @@
 
 ## Installation
 
-> composer require "wilr/googlesitemaps"
+> composer require "wilr/silverstripe-googlesitemaps"
 
 ## Documentation
 
