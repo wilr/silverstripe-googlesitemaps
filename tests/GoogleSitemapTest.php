@@ -1,5 +1,17 @@
 <?php
 
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Dev\TestOnly;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\Tab;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
+use SilverStripe\ORM\Versioning\Versioned;
+
 /**
  * TODO: Migrate to new instance level interface instead of using static methods for retrieval of site maps and items (i.e. ->getSitemaps() instead of ::get_sitemaps()).
  *
@@ -25,7 +37,7 @@ class GoogleSitemapTest extends FunctionalTest
         if (class_exists('Page')) {
             $this->loadFixture('googlesitemaps/tests/GoogleSitemapPageTest.yml');
         }
-        
+
         GoogleSitemap::clear_registered_dataobjects();
         GoogleSitemap::clear_registered_routes();
     }
@@ -93,7 +105,7 @@ class GoogleSitemapTest extends FunctionalTest
         // dataobject as it hasn't been registered
         $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1") ."</loc>";
         $this->assertEquals(1, substr_count($body, $expected), 'A link to GoogleSitemapTest_DataObject exists');
-        
+
         $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_OtherDataObject/1") ."</loc>";
         $this->assertEquals(1, substr_count($body, $expected), 'A link to GoogleSitemapTest_OtherDataObject exists');
 
@@ -222,11 +234,11 @@ class GoogleSitemapTest extends FunctionalTest
         if (!class_exists('Page')) {
             $this->markTestIncomplete('No cms module installed, page related test skipped');
         }
-        
+
         $page = $this->objFromFixture('Page', 'Page1');
         $page->publish('Stage', 'Live');
         $page->flushCache();
-    
+
         $page2 = $this->objFromFixture('Page', 'Page2');
         $page2->publish('Stage', 'Live');
         $page2->flushCache();
@@ -234,29 +246,29 @@ class GoogleSitemapTest extends FunctionalTest
         $this->assertDOSContains(array(
             array('Title' => 'Testpage1'),
             array('Title' => 'Testpage2')
-        ), GoogleSitemap::get_items('SiteTree'), "There should be 2 pages in the sitemap after publishing");
-    
+        ), GoogleSitemap::get_items(SiteTree::class), "There should be 2 pages in the sitemap after publishing");
+
         // check if we make a page readonly that it is hidden
         $page2->CanViewType = 'LoggedInUsers';
         $page2->write();
         $page2->publish('Stage', 'Live');
-    
+
         $this->session()->inst_set('loggedInAs', null);
-        
+
         $this->assertDOSEquals(array(
             array('Title' => 'Testpage1')
-        ), GoogleSitemap::get_items('SiteTree'), "There should be only 1 page, other is logged in only");
+        ), GoogleSitemap::get_items(SiteTree::class), "There should be only 1 page, other is logged in only");
     }
-    
+
     public function testAccess()
     {
         Config::inst()->update('GoogleSitemap', 'enabled', true);
-        
+
         $response = $this->get('sitemap.xml');
 
         $this->assertEquals(200, $response->getStatusCode(), 'Sitemap returns a 200 success when enabled');
         $this->assertEquals('application/xml; charset="utf-8"', $response->getHeader('Content-Type'));
-        
+
         GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
         $response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
         $this->assertEquals(200, $response->getStatusCode(), 'Sitemap returns a 200 success when enabled');
@@ -264,14 +276,14 @@ class GoogleSitemapTest extends FunctionalTest
 
         Config::inst()->remove('GoogleSitemap', 'enabled');
         Config::inst()->update('GoogleSitemap', 'enabled', false);
-        
+
         $response = $this->get('sitemap.xml');
         $this->assertEquals(404, $response->getStatusCode(), 'Sitemap index returns a 404 when disabled');
 
         $response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
         $this->assertEquals(404, $response->getStatusCode(), 'Sitemap file returns a 404 when disabled');
     }
-    
+
     public function testDecoratorAddsFields()
     {
         if (!class_exists("Page")) {
@@ -279,21 +291,21 @@ class GoogleSitemapTest extends FunctionalTest
         }
 
         $page = $this->objFromFixture('Page', 'Page1');
-    
+
         $fields = $page->getSettingsFields();
         $tab = $fields->fieldByName('Root')->fieldByName('Settings')->fieldByName('GoogleSitemap');
-    
-        $this->assertInstanceOf('Tab', $tab);
-        $this->assertInstanceOf('DropdownField', $tab->fieldByName('Priority'));
-        $this->assertInstanceOf('LiteralField', $tab->fieldByName('GoogleSitemapIntro'));
+
+        $this->assertInstanceOf(Tab::class, $tab);
+        $this->assertInstanceOf(DropdownField::class, $tab->fieldByName('Priority'));
+        $this->assertInstanceOf(LiteralField::class, $tab->fieldByName('GoogleSitemapIntro'));
     }
-    
+
     public function testGetPriority()
     {
         if (!class_exists("Page")) {
             $this->markTestIncomplete('No cms module installed, page related test skipped');
         }
-        
+
         $page = $this->objFromFixture('Page', 'Page1');
 
         // invalid field doesn't break google
@@ -303,31 +315,31 @@ class GoogleSitemapTest extends FunctionalTest
         // custom value (set as string as db field is varchar)
         $page->Priority = '0.2';
         $this->assertEquals(0.2, $page->getGooglePriority());
-        
+
         // -1 indicates that we should not index this
         $page->Priority = -1;
         $this->assertFalse($page->getGooglePriority());
     }
-    
+
     public function testUnpublishedPage()
     {
-        if (!class_exists('SiteTree')) {
+        if (!class_exists(SiteTree::class)) {
             $this->markTestSkipped('Test skipped; CMS module required for testUnpublishedPage');
         }
-        
+
         $orphanedPage = new SiteTree();
         $orphanedPage->ParentID = 999999; // missing parent id
         $orphanedPage->write();
         $orphanedPage->publish("Stage", "Live");
-        
+
         $rootPage = new SiteTree();
         $rootPage->ParentID = 0;
         $rootPage->write();
         $rootPage->publish("Stage", "Live");
-        
+
         $oldMode = Versioned::get_reading_mode();
-        Versioned::reading_stage('Live');
-        
+        Versioned::set_reading_mode('Live');
+
         try {
             $this->assertEmpty($orphanedPage->hasPublishedParent());
             $this->assertEmpty($orphanedPage->canIncludeInGoogleSitemap());
@@ -348,8 +360,8 @@ class GoogleSitemapTest extends FunctionalTest
  */
 class GoogleSitemapTest_DataObject extends DataObject implements TestOnly
 {
-    
-    public static $db = array(
+
+    private static $db = array(
         'Priority' => 'Varchar(10)'
     );
 
@@ -371,7 +383,7 @@ class GoogleSitemapTest_DataObject extends DataObject implements TestOnly
 class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly
 {
 
-    public static $db = array(
+    private static $db = array(
         'Priority' => 'Varchar(10)'
     );
 

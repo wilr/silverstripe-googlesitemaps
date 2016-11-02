@@ -4,7 +4,7 @@ GoogleSitemapTest_DataObject:
     DataObjectTest2:
         Priority: 0.2
     UnindexedDataObject:
-    	Priority: -1
+      Priority: -1
 
 GoogleSitemapTest_OtherDataObject:
     OtherDataObjectTest2:

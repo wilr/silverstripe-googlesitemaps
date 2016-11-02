@@ -1,5 +1,10 @@
 <?php
 
+use SilverStripe\CMS\Model\ErrorPage;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\Tab;
+
 /**
  * @package googlesitemaps
  */
@@ -33,13 +38,13 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         );
 
         $tabset = $fields->findOrMakeTab('Root.Settings');
-        
+
         $message = "<p>";
         $message .= sprintf(_t('GoogleSitemaps.METANOTEPRIORITY', "Manually specify a Google Sitemaps priority for this page (%s)"),
             '<a href="http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=71936#prioritize" target="_blank">?</a>'
         );
         $message .=  "</p>";
-        
+
         $tabset->push(new Tab('GoogleSitemap', _t('GoogleSitemaps.TABGOOGLESITEMAP', 'Google Sitemap'),
             new LiteralField("GoogleSitemapIntro", $message),
             $priority = new DropdownField("Priority", $this->owner->fieldLabel('Priority'), $prorities, $this->owner->Priority)
@@ -59,26 +64,26 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
 
         $labels['Priority'] = _t('GoogleSitemaps.METAPAGEPRIO', "Page Priority");
     }
-    
+
     /**
      * Ensure that all parent pages of this page (if any) are published
-     * 
+     *
      * @return boolean
      */
     public function hasPublishedParent()
     {
-        
+
         // Skip root pages
         if (empty($this->owner->ParentID)) {
             return true;
         }
-        
+
         // Ensure direct parent exists
         $parent = $this->owner->Parent();
         if (empty($parent) || !$parent->exists()) {
             return false;
         }
-        
+
         // Check ancestry
         return $parent->hasPublishedParent();
     }
@@ -88,12 +93,12 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
      */
     public function canIncludeInGoogleSitemap()
     {
-        
+
         // Check that parent page is published
         if (!$this->owner->hasPublishedParent()) {
             return false;
         }
-        
+
         $result = parent::canIncludeInGoogleSitemap();
         $result = ($this->owner instanceof ErrorPage) ? false : $result;
 
@@ -111,7 +116,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         if (!$priority) {
             $parentStack = $this->owner->parentStack();
             $numParents = is_array($parentStack) ? count($parentStack) - 1 : 0;
-            
+
             $num = max(0.1, 1.0 - ($numParents / 10));
             $result = str_replace(",", ".", $num);
 

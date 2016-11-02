@@ -1,4 +1,15 @@
 <?php
+
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Object;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\Versioning\Versioned;
+use SilverStripe\View\ArrayData;
+
 /**
  * Sitemaps are a way to tell Google about pages on your site that they might
  * not otherwise discover. In its simplest terms, a XML Sitemap usually called
@@ -225,8 +236,8 @@ class GoogleSitemap extends Object
             Translatable::disable_locale_filter();
         }
 
-        if ($class == "SiteTree") {
-            $instances = Versioned::get_by_stage('SiteTree', 'Live');
+        if ($class == SiteTree::class) {
+            $instances = Versioned::get_by_stage(SiteTree::class, 'Live');
 
             if($filter) {
                 $instances = $instances->filter('ShowInSearch', 1);
@@ -341,7 +352,7 @@ class GoogleSitemap extends Object
         $sitemaps = new ArrayList();
         $filter = Config::inst()->get('GoogleSitemap', 'use_show_in_search');
 
-        if (class_exists('SiteTree')) {
+        if (class_exists(SiteTree::class)) {
             // move to extension hook. At the moment moduleexists config hook
             // does not work.
             if (class_exists('Translatable')) {
@@ -349,7 +360,7 @@ class GoogleSitemap extends Object
             }
 
             $filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
-            $class = 'SiteTree';
+            $class = SiteTree::class;
             $instances = Versioned::get_by_stage($class, 'Live', $filter);
             $this->extend("alterDataList", $instances, $class);
             $count = $instances->count();
@@ -365,7 +376,7 @@ class GoogleSitemap extends Object
                 $lastModified = ($lastEdited) ? date('Y-m-d', strtotime($lastEdited)) : date('Y-m-d');
 
                 $sitemaps->push(new ArrayData(array(
-                    'ClassName' => 'SiteTree',
+                    'ClassName' => $this->sanitiseClassName(SiteTree::class),
                     'LastModified' => $lastModified,
                     'Page' => $i
                 )));
