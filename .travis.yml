@@ -15,19 +15,13 @@ env:
 matrix:
   include:
     - php: 5.6
-      env: DB=MYSQL CORE_RELEASE=master
-    - php: 5.6
       env: DB=PGSQL CORE_RELEASE=master
-  allow_failures:
-    - php: 7.0
 
 before_script:
   - composer self-update || true
   - git clone git://github.com/silverstripe-labs/silverstripe-travis-support.git ~/travis-support
   - php ~/travis-support/travis_setup.php --source `pwd` --target ~/builds/ss
   - cd ~/builds/ss
-  - composer install
-  - composer require wilr/silverstripe-googlesitemaps
 
 script:
   - vendor/bin/phpunit googlesitemaps/tests
