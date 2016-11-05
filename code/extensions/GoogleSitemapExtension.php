@@ -1,5 +1,9 @@
 <?php
 
+use SilverStripe\Control\Director;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\FieldType\DBDatetime;
+
 /**
  * Decorate the page object to provide google sitemaps with
  * additionally options and configuration.
@@ -86,7 +90,7 @@ class GoogleSitemapExtension extends DataExtension
      *
      * @see http://support.google.com/webmasters/bin/answer.py?hl=en&answer=183668&topic=8476&ctx=topic
      *
-     * @return SS_Datetime
+     * @return DBDatetime
      */
     public function getChangeFrequency()
     {
@@ -96,10 +100,10 @@ class GoogleSitemapExtension extends DataExtension
 
         $date = date('Y-m-d H:i:s');
 
-        $created = new SS_Datetime();
+        $created = new DBDatetime();
         $created->value = ($this->owner->Created) ? $this->owner->Created : $date;
 
-        $now = new SS_Datetime();
+        $now = new DBDatetime();
         $now->value = $date;
 
         $versions = ($this->owner->Version) ? $this->owner->Version : 1;

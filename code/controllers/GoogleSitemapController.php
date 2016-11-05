@@ -1,7 +1,12 @@
 <?php
 
+use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Control\Controller;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Control\HTTPResponse;
+
 /**
- * Controller for displaying the sitemap.xml. The module displays an index 
+ * Controller for displaying the sitemap.xml. The module displays an index
  * sitemap at the sitemap.xml level, then outputs the individual objects
  * at a second level.
  *
@@ -34,7 +39,7 @@ class GoogleSitemapController extends Controller
     {
         if (GoogleSitemap::enabled()) {
             Config::inst()->update('SSViewer', 'set_source_file_comments', false);
-            
+
             $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
             $this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
 
@@ -45,14 +50,14 @@ class GoogleSitemapController extends Controller
                 'Sitemaps' => $sitemaps
             );
         } else {
-            return new SS_HTTPResponse('Page not found', 404);
+            return new HTTPResponse('Page not found', 404);
         }
     }
 
     /**
-     * Specific controller action for displaying a particular list of links 
+     * Specific controller action for displaying a particular list of links
      * for a class
-     * 
+     *
      * @return mixed
      */
     public function sitemap()
@@ -60,9 +65,9 @@ class GoogleSitemapController extends Controller
         $class = $this->unsanitiseClassName($this->request->param('ID'));
         $page = $this->request->param('OtherID');
 
-        if (GoogleSitemap::enabled() && $class && $page && ($class == 'SiteTree' || $class == 'GoogleSitemapRoute' || GoogleSitemap::is_registered($class))) {
+        if (GoogleSitemap::enabled() && $class && $page && ($class == SiteTree::class || $class == 'GoogleSitemapRoute' || GoogleSitemap::is_registered($class))) {
             Config::inst()->update('SSViewer', 'set_source_file_comments', false);
-            
+
             $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
             $this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
 
@@ -73,7 +78,7 @@ class GoogleSitemapController extends Controller
                 'Items' => $items
             );
         } else {
-            return new SS_HTTPResponse('Page not found', 404);
+            return new HTTPResponse('Page not found', 404);
         }
     }
 
