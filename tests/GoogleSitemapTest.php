@@ -34,10 +34,7 @@ class GoogleSitemapTest extends FunctionalTest
     {
         parent::setUp();
 
-        if (class_exists('Page')) {
-            $this->loadFixture('googlesitemaps/tests/GoogleSitemapPageTest.yml');
-        }
-
+        Config::inst()->update('GoogleSitemap', 'use_show_in_search', true);
         GoogleSitemap::clear_registered_dataobjects();
         GoogleSitemap::clear_registered_routes();
     }
@@ -117,15 +114,11 @@ class GoogleSitemapTest extends FunctionalTest
     {
         Config::inst()->update('GoogleSitemap', 'enabled', true);
 
-        if (!class_exists('Page')) {
-            $this->markTestIncomplete('No cms module installed, page related test skipped');
-        }
-
-        $page = $this->objFromFixture('Page', 'Page1');
+        $page = $this->objFromFixture(SiteTree::class, 'Page1');
         $page->publish('Stage', 'Live');
         $page->flushCache();
 
-        $page2 = $this->objFromFixture('Page', 'Page2');
+        $page2 = $this->objFromFixture(SiteTree::class, 'Page2');
         $page2->publish('Stage', 'Live');
         $page2->flushCache();
 
@@ -231,15 +224,11 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testGetItemsWithPages()
     {
-        if (!class_exists('Page')) {
-            $this->markTestIncomplete('No cms module installed, page related test skipped');
-        }
-
-        $page = $this->objFromFixture('Page', 'Page1');
+        $page = $this->objFromFixture(SiteTree::class, 'Page1');
         $page->publish('Stage', 'Live');
         $page->flushCache();
 
-        $page2 = $this->objFromFixture('Page', 'Page2');
+        $page2 = $this->objFromFixture(SiteTree::class, 'Page2');
         $page2->publish('Stage', 'Live');
         $page2->flushCache();
 
@@ -286,11 +275,7 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testDecoratorAddsFields()
     {
-        if (!class_exists("Page")) {
-            $this->markTestIncomplete('No cms module installed, page related test skipped');
-        }
-
-        $page = $this->objFromFixture('Page', 'Page1');
+        $page = $this->objFromFixture(SiteTree::class, 'Page1');
 
         $fields = $page->getSettingsFields();
         $tab = $fields->fieldByName('Root')->fieldByName('Settings')->fieldByName('GoogleSitemap');
@@ -302,11 +287,7 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testGetPriority()
     {
-        if (!class_exists("Page")) {
-            $this->markTestIncomplete('No cms module installed, page related test skipped');
-        }
-
-        $page = $this->objFromFixture('Page', 'Page1');
+        $page = $this->objFromFixture(SiteTree::class, 'Page1');
 
         // invalid field doesn't break google
         $page->Priority = 'foo';
@@ -323,10 +304,6 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testUnpublishedPage()
     {
-        if (!class_exists(SiteTree::class)) {
-            $this->markTestSkipped('Test skipped; CMS module required for testUnpublishedPage');
-        }
-
         $orphanedPage = new SiteTree();
         $orphanedPage->ParentID = 999999; // missing parent id
         $orphanedPage->write();
@@ -405,7 +382,7 @@ class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly
 class GoogleSitemapTest_UnviewableDataObject extends DataObject implements TestOnly
 {
 
-    public static $db = array(
+    private static $db = array(
         'Priority' => 'Varchar(10)'
     );
 

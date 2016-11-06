@@ -1,15 +1,22 @@
 GoogleSitemapTest_DataObject:
-    DataObjectTest1:
-        Priority: 0.4
-    DataObjectTest2:
-        Priority: 0.2
-    UnindexedDataObject:
+  DataObjectTest1:
+    Priority: 0.4
+  DataObjectTest2:
+    Priority: 0.2
+  UnindexedDataObject:
       Priority: -1
 
 GoogleSitemapTest_OtherDataObject:
-    OtherDataObjectTest2:
-        Priority: 0.3
+  OtherDataObjectTest2:
+    Priority: 0.3
 
 GoogleSitemapTest_UnviewableDataObject:
-    Unviewable1:
+  Unviewable1:
         Priority: 0.4
+
+SilverStripe\CMS\Model\SiteTree:
+    Page1:
+        Title: Testpage1
+        Priority: 0.2
+    Page2:
+        Title: Testpage2
