@@ -405,7 +405,7 @@ class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly
 class GoogleSitemapTest_UnviewableDataObject extends DataObject implements TestOnly
 {
 
-    public static $db = array(
+    private static $db = array(
         'Priority' => 'Varchar(10)'
     );
 
