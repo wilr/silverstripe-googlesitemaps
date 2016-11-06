@@ -244,7 +244,7 @@ class GoogleSitemap extends Object
             }
 
             if($redirector) {
-                foreach (ClassInfo::subclassesFor('RedirectorPage') as $redirectorClass) {
+                foreach (ClassInfo::subclassesFor('SilverStripe\\CMS\\Model\\RedirectorPage') as $redirectorClass) {
                     $instances = $instances->exclude('ClassName', $redirectorClass);
                 }
             }
