@@ -1,0 +1,9 @@
+it:
+  GoogleSitemaps:
+    METANOTEPRIORITY: 'Specifica manualmente una priorità Sitemaps di Google per questa pagina (%s)'
+    METAPAGEPRIO: 'Priorità Pagina'
+    PRIORITYAUTOSET: 'Imposta automaticamente in base alla profondità della pagina'
+    PRIORITYLEASTIMPORTANT: 'Meno importante'
+    PRIORITYMOSTIMPORTANT: 'Più importante'
+    PRIORITYNOTINDEXED: 'Non indicizzato'
+    TABGOOGLESITEMAP: 'Sitemap di Google'
