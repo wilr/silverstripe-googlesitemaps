@@ -6,10 +6,6 @@
 
 * Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
 
-## Requirements
-
-* SilverStripe 3.1
-
 ## Installation
 
 > composer require "wilr/silverstripe-googlesitemaps"
