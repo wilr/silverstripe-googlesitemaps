@@ -38,7 +38,7 @@ class GoogleSitemapController extends Controller
     public function index($url)
     {
         if (GoogleSitemap::enabled()) {
-            Config::inst()->update('SSViewer', 'set_source_file_comments', false);
+            Config::inst()->update('SilverStripe\\View\\SSViewer', 'set_source_file_comments', false);
 
             $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
             $this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
@@ -66,7 +66,7 @@ class GoogleSitemapController extends Controller
         $page = $this->request->param('OtherID');
 
         if (GoogleSitemap::enabled() && $class && $page && ($class == SiteTree::class || $class == 'GoogleSitemapRoute' || GoogleSitemap::is_registered($class))) {
-            Config::inst()->update('SSViewer', 'set_source_file_comments', false);
+            Config::inst()->update('SilverStripe\\View\\SSViewer', 'set_source_file_comments', false);
 
             $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
             $this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
