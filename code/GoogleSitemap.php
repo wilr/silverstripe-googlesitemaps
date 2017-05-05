@@ -506,7 +506,7 @@ class GoogleSitemap extends Object
      */
     public static function enabled()
     {
-        return (Config::inst()->get('GoogleSitemap', 'enabled', Config::INHERITED));
+        return (Config::inst()->get('GoogleSitemap', 'enabled'));
     }
 
 
