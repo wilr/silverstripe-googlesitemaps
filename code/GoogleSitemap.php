@@ -7,7 +7,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Object;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
-use SilverStripe\ORM\Versioning\Versioned;
+use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\ArrayData;
 
 /**

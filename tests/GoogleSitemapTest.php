@@ -10,7 +10,7 @@ use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
-use SilverStripe\ORM\Versioning\Versioned;
+use SilverStripe\Versioned\Versioned;
 
 /**
  * TODO: Migrate to new instance level interface instead of using static methods for retrieval of site maps and items (i.e. ->getSitemaps() instead of ::get_sitemaps()).
@@ -20,7 +20,6 @@ use SilverStripe\ORM\Versioning\Versioned;
  */
 class GoogleSitemapTest extends FunctionalTest
 {
-
     public static $fixture_file = 'googlesitemaps/tests/GoogleSitemapTest.yml';
 
     protected $extraDataObjects = array(
