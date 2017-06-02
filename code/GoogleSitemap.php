@@ -9,6 +9,9 @@ use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\View\ArrayData;
+use SilverStripe\Core\Extensible;
+use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Config\Configurable;
 
 /**
  * Sitemaps are a way to tell Google about pages on your site that they might
@@ -48,8 +51,11 @@ use SilverStripe\View\ArrayData;
  *
  * @package googlesitemaps
  */
-class GoogleSitemap extends Object
+class GoogleSitemap
 {
+    use Extensible;
+    use Injectable;
+    use Configurable;
 
     /**
      * List of {@link DataObject} class names to include. As well as the change
