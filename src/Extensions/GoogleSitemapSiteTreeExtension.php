@@ -48,7 +48,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             '<a href="http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=71936#prioritize" '
             . 'target="_blank">?</a>'
         );
-        $message .=  "</p>";
+        $message .= "</p>";
 
         $tabset->push(new Tab(
             'GoogleSitemap',
@@ -145,15 +145,15 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         $list = new ArrayList();
 
         foreach ($this->owner->hasOne() as $field => $type) {
-            if(is_a(singleton($type), 'Image')) {
+            if (singleton($type) instanceof Image) {
                 $image = $this->owner->getComponent($field);
-                if($image && $image->exists()) {
+                if ($image && $image->exists()) {
                     $list->push($image);
                 }
             }
         }
         foreach ($this->owner->hasMany() as $field => $type) {
-            if(is_a(singleton($type), 'Image')) {
+            if (singleton($type) instanceof Image) {
                 $images = $this->owner->getComponents($field);
                 foreach ($images as $image) {
                     if ($image && $image->exists()) {
@@ -162,7 +162,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
                 }
             }
         }
-        
+
         $this->owner->extend('updateImagesForSitemap', $list);
         return $list;
     }
