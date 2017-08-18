@@ -402,7 +402,7 @@ class GoogleSitemap
                         ->limit($countPerFile, ($i - 1) * $countPerFile)
                         ->last();
 
-                    $lastModified = ($sliced) ? $sliced->dbObject('LastEdited')->Format('Y-m-d') : date('Y-m-d');
+                    $lastModified = ($sliced) ? date('Y-m-d', strtotime($sliced->LastEdited)): date('Y-m-d');
 
                     $sitemaps->push(new ArrayData(array(
                         'ClassName' => $this->sanitiseClassName($class),
