@@ -1,14 +1,15 @@
 <?php
 
+namespace Wilr\GoogleSitemaps\Extensions;
+
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use Wilr\GoogleSitemaps\GoogleSitemap;
 
 /**
- * Decorate the page object to provide google sitemaps with
- * additionally options and configuration.
- *
- * @package googlesitemaps
+ * Decorate the page object to provide google sitemaps with additional options
+ * and configuration.
  */
 class GoogleSitemapExtension extends DataExtension
 {

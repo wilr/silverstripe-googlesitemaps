@@ -1,5 +1,7 @@
 <?php
 
+namespace Wilr\GoogleSitemaps;
+
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
@@ -12,7 +14,7 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Config\Configurable;
-
+use ReflectionClass;
 /**
  * Sitemaps are a way to tell Google about pages on your site that they might
  * not otherwise discover. In its simplest terms, a XML Sitemap usually called
@@ -48,8 +50,6 @@ use SilverStripe\Core\Config\Configurable;
  * </example>
  *
  * @see http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=34609
- *
- * @package googlesitemaps
  */
 class GoogleSitemap
 {
@@ -232,9 +232,9 @@ class GoogleSitemap
         }
 
         $output = new ArrayList();
-        $count = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
-        $filter =  Config::inst()->get('GoogleSitemap', 'use_show_in_search');
-        $redirector =  Config::inst()->get('GoogleSitemap', 'exclude_redirector_pages');
+        $count = Config::inst()->get(__CLASS__, 'objects_per_sitemap');
+        $filter =  Config::inst()->get(__CLASS__, 'use_show_in_search');
+        $redirector =  Config::inst()->get(__CLASS__, 'exclude_redirector_pages');
 
         // todo migrate to extension hook or DI point for other modules to
         // modify state filters
@@ -354,9 +354,9 @@ class GoogleSitemap
      */
     public function getSitemaps()
     {
-        $countPerFile = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
+        $countPerFile = Config::inst()->get(__CLASS__, 'objects_per_sitemap');
         $sitemaps = new ArrayList();
-        $filter = Config::inst()->get('GoogleSitemap', 'use_show_in_search');
+        $filter = Config::inst()->get(__CLASS__, 'use_show_in_search');
 
         if (class_exists(SiteTree::class)) {
             // move to extension hook. At the moment moduleexists config hook
@@ -457,7 +457,7 @@ class GoogleSitemap
         }
 
         // Don't ping if the site has disabled it, or if the site is in dev mode
-        $active = Config::inst()->get('GoogleSitemap', 'google_notification_enabled');
+        $active = Config::inst()->get(__CLASS__, 'google_notification_enabled');
 
         if (!$active || Director::isDev()) {
             return false;
@@ -473,7 +473,7 @@ class GoogleSitemap
         );
 
         // bing
-        $bing = Config::inst()->get('GoogleSitemap', 'bing_notification_enabled');
+        $bing = Config::inst()->get(__CLASS__, 'bing_notification_enabled');
 
         if($bing) {
             $bingResponse = self::send_ping(
@@ -512,7 +512,7 @@ class GoogleSitemap
      */
     public static function enabled()
     {
-        return (Config::inst()->get('GoogleSitemap', 'enabled'));
+        return (Config::inst()->get(__CLASS__, 'enabled'));
     }
 
 

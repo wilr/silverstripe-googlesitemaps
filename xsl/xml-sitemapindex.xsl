@@ -6,14 +6,7 @@
       <head>
         <title>XML Sitemap</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="../../../googlesitemaps/css/style.css" />
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-        <script type="text/javascript" src="../../../googlesitemaps/javascript/jquery.tablesorter.min.js"></script>
-        <script type="text/javascript"><![CDATA[
-          $(document).ready(function() {
-                $("#sitemap").tablesorter( { sortList: [[0,0]],widgets: ['zebra'] } );
-          });
-        ]]></script>
+        <link rel="stylesheet" href="resources/wilr/silverstripe-googlesitemaps/css/style.css" />
       </head>
       <body>
         <div id="content">
@@ -24,21 +17,19 @@
           </h1>
 
           <p class="expl">
-            This sitemap contains <xsl:value-of select="count(sitemap:urlset/sitemap:url)"/> URLs.
+            This sitemap consists of <xsl:value-of select="count(sitemap:sitemapindex/sitemap:sitemap)"/> part(s).
           </p>
-          <table id="sitemap" cellpadding="3" class="tablesorter">
+          <table id="sitemapindex" cellpadding="3" class="tablesorter">
             <thead>
               <tr>
-                <th width="76%">URL</th>
-                <th width="7%">Priority</th>
-                <th width="7%">Change Freq.</th>
+                <th width="90%">URL</th>
                 <th width="10%">Last Change</th>
               </tr>
             </thead>
             <tbody>
               <xsl:variable name="lower" select="'abcdefghijklmnopqrstuvwxyz'"/>
               <xsl:variable name="upper" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
-              <xsl:for-each select="sitemap:urlset/sitemap:url">
+              <xsl:for-each select="sitemap:sitemapindex/sitemap:sitemap">
                 <tr>
                   <td>
                     <xsl:variable name="itemURL">
@@ -47,12 +38,6 @@
                     <a href="{$itemURL}">
                       <xsl:value-of select="sitemap:loc"/>
                     </a>
-                  </td>
-                  <td>
-                    <xsl:value-of select="concat(sitemap:priority*100,'%')"/>
-                  </td>
-                  <td>
-                    <xsl:value-of select="concat(translate(substring(sitemap:changefreq, 1, 1),concat($lower, $upper),concat($upper, $lower)),substring(sitemap:changefreq, 2))"/>
                   </td>
                   <td>
                     <xsl:value-of select="concat(substring(sitemap:lastmod,0,11),concat(' ', substring(sitemap:lastmod,12,5)))"/>

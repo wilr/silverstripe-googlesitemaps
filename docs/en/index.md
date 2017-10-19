@@ -34,7 +34,7 @@ config file `mysite/_config/googlesitemaps.yml` with the following outline:
 	Name: customgooglesitemaps
 	After: googlesitemaps
 	---
-	GoogleSitemap:
+	Wilr\GoogleSitemaps\GoogleSitemap:
   		enabled: true
   		objects_per_sitemap: 1000
   		google_notification_enabled: false
@@ -49,7 +49,7 @@ editing the `google_notification_enabled` option to true
 	Name: customgooglesitemaps
 	After: googlesitemaps
 	---
-	GoogleSitemap:
+	Wilr\GoogleSitemaps\GoogleSitemap:
   		enabled: true
   		objects_per_sitemap: 1000
   		google_notification_enabled: true
@@ -63,7 +63,7 @@ To ping Bing whenever your sitemap is updated, set `bing_notification_enabled`
     Name: customgooglesitemaps
     After: googlesitemaps
     ---
-    GoogleSitemap:
+    Wilr\GoogleSitemaps\GoogleSitemap:
         enabled: true
         bing_notification_enabled: true
 
@@ -85,6 +85,9 @@ to show the DataObject by its ID.
 
 	<?php
 
+    use SilverStripe\ORM\DataObject;
+    use SilverStripe\Control\Director;
+
 	class MyDataObject extends DataObject {
 
 		function canView($member = null) {
@@ -105,11 +108,15 @@ After those methods have been defined on your DataObject you now need to tell
 the Google Sitemaps module that it should be listed in the sitemap.xml file. To
 do that, include the following in your _config.php file.
 
+    use Wilr\GoogleSitemaps\GoogleSitemap;
+
 	GoogleSitemap::register_dataobject('MyDataObject');
 
 If you need to change the frequency of the indexing, you can pass the change
 frequency (daily, weekly, monthly) as a second parameter to register_dataobject(), So
 instead of the previous code you would write:
+
+    use Wilr\GoogleSitemaps\GoogleSitemap;
 
 	GoogleSitemap::register_dataobject('MyDataObject', 'daily');
 
@@ -123,6 +130,8 @@ Occasionally you may have a need to include custom url's in your sitemap for
 your Controllers and other pages which don't exist in the database. To update
 the sitemap to include those links call register_routes() with your array of
 urls to include.
+
+    use Wilr\GoogleSitemaps\GoogleSitemap;
 
 	GoogleSitemap::register_routes(array(
 		'/my-custom-controller/',

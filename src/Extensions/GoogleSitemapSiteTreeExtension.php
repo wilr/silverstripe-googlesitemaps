@@ -1,13 +1,12 @@
 <?php
 
+namespace Wilr\GoogleSitemaps\Extensions;
+
 use SilverStripe\CMS\Model\ErrorPage;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 
-/**
- * @package googlesitemaps
- */
 class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
 {
 

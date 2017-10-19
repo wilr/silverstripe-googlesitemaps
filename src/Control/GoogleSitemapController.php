@@ -1,9 +1,14 @@
 <?php
 
+namespace Wilr\GoogleSitemaps\Control;
+
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Core\Manifest\ModuleResourceLoader;
+use Wilr\GoogleSitemaps\GoogleSitemap;
+use SilverStripe\View\ArrayData;
 
 /**
  * Controller for displaying the sitemap.xml. The module displays an index
@@ -23,10 +28,10 @@ class GoogleSitemapController extends Controller
     /**
      * @var array
      */
-    private static $allowed_actions = array(
+    private static $allowed_actions = [
         'index',
         'sitemap'
-    );
+    ];
 
 
     /**
@@ -44,9 +49,9 @@ class GoogleSitemapController extends Controller
             $sitemaps = GoogleSitemap::inst()->getSitemaps();
             $this->extend('updateGoogleSitemaps', $sitemaps);
 
-            return array(
+            return $this->customise(new ArrayData([
                 'Sitemaps' => $sitemaps
-            );
+            ]))->renderWith(__CLASS__);
         } else {
             return new HTTPResponse('Page not found', 404);
         }
@@ -85,5 +90,15 @@ class GoogleSitemapController extends Controller
     protected function unsanitiseClassName($class)
     {
         return str_replace('-', '\\', $class);
+    }
+
+    public function StylesheetIndexPath()
+    {
+        return ModuleResourceLoader::resourceURL('wilr/silverstripe-googlesitemaps:xsl/xml-sitemapindex.xsl');
+    }
+
+    public function StylesheetPath()
+    {
+        return ModuleResourceLoader::resourceURL('wilr/silverstripe-googlesitemaps:xsl/xml-sitemap.xsl');
     }
 }

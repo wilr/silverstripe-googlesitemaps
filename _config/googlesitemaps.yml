@@ -1,7 +1,7 @@
 ---
 Name: googlesitemaps
 ---
-GoogleSitemap:
+Wilr\GoogleSitemaps\GoogleSitemap:
   enabled: true
   objects_per_sitemap: 1000
   google_notification_enabled: false
@@ -12,4 +12,4 @@ Only:
 ---
 SilverStripe\CMS\Model\SiteTree:
   extensions:
-    - GoogleSitemapSiteTreeExtension
+    - Wilr\GoogleSitemaps\Extensions\GoogleSitemapSiteTreeExtension
