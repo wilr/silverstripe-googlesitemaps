@@ -1,6 +1,7 @@
 <?php
 
-use SilverStripe\CMS\Model\SiteTree;
+namespace Wilr\GoogleSitemaps\Tests;
+
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\FunctionalTest;
@@ -11,30 +12,33 @@ use SilverStripe\Forms\Tab;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Versioned\Versioned;
+use Wilr\GoogleSitemaps\GoogleSitemap;
+use Wilr\GoogleSitemaps\Extensions\GoogleSitemapExtension;
+use Wilr\GoogleSitemaps\Tests\Model\TestDataObject;
+use Wilr\GoogleSitemaps\Tests\Model\OtherDataObject;
+use Wilr\GoogleSitemaps\Tests\Model\UnviewableDataObject;
+use Exception;
 
-/**
- * TODO: Migrate to new instance level interface instead of using static methods for retrieval of site maps and items (i.e. ->getSitemaps() instead of ::get_sitemaps()).
- *
- * @package googlesitemaps
- * @subpackage tests
- */
 class GoogleSitemapTest extends FunctionalTest
 {
-    public static $fixture_file = 'googlesitemaps/tests/GoogleSitemapTest.yml';
+    protected static $fixture_file = 'GoogleSitemapTest.yml';
 
-    protected $extraDataObjects = array(
-        'GoogleSitemapTest_DataObject',
-        'GoogleSitemapTest_OtherDataObject',
-        'GoogleSitemapTest_UnviewableDataObject',
-        'SilverStripe\GoogleSitemaps\Test_DataObject',
-    );
+    protected static $extra_dataobjects = [
+        TestDataObject::class,
+        OtherDataObject::class,
+        UnviewableDataObject::class
+    ];
+
+    protected static $extra_extensions = [
+        GoogleSitemapExtension::class
+    ];
 
     public function setUp()
     {
         parent::setUp();
 
         if (class_exists('Page')) {
-            $this->loadFixture('googlesitemaps/tests/GoogleSitemapPageTest.yml');
+            $this->loadFixture($this->resolveFixturePath('GoogleSitemapPageTest.yml'));
         }
 
         GoogleSitemap::clear_registered_dataobjects();
@@ -47,6 +51,17 @@ class GoogleSitemapTest extends FunctionalTest
 
         GoogleSitemap::clear_registered_dataobjects();
         GoogleSitemap::clear_registered_routes();
+    }
+
+    public function testCanIncludeInGoogleSitemap()
+    {
+        GoogleSitemap::register_dataobject(TestDataObject::class, '');
+
+        $unused = $this->objFromFixture(TestDataObject::class, 'UnindexedDataObject');
+        $this->assertFalse($unused->canIncludeInGoogleSitemap());
+
+        $used = $this->objFromFixture(TestDataObject::class, 'DataObjectTest2');
+        $this->assertTrue($used->canIncludeInGoogleSitemap());
     }
 
     public function testIndexFileWithCustomRoute()
@@ -63,9 +78,9 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testGetItems()
     {
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject", '');
+        GoogleSitemap::register_dataobject(TestDataObject::class, '');
 
-        $items = GoogleSitemap::get_items('GoogleSitemapTest_DataObject', 1);
+        $items = GoogleSitemap::get_items(TestDataObject::class, 1);
         $this->assertEquals(2, $items->count());
 
         $this->assertDOSEquals(array(
@@ -73,11 +88,11 @@ class GoogleSitemapTest extends FunctionalTest
             array("Priority" => "0.4")
         ), $items);
 
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_OtherDataObject");
-        $this->assertEquals(1, GoogleSitemap::get_items('GoogleSitemapTest_OtherDataObject', 1)->count());
+        GoogleSitemap::register_dataobject(OtherDataObject::class);
+        $this->assertEquals(1, GoogleSitemap::get_items(OtherDataObject::class, 1)->count());
 
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_UnviewableDataObject");
-        $this->assertEquals(0, GoogleSitemap::get_items('GoogleSitemapTest_UnviewableDataObject', 1)->count());
+        GoogleSitemap::register_dataobject(UnviewableDataObject::class);
+        $this->assertEquals(0, GoogleSitemap::get_items(UnviewableDataObject::class, 1)->count());
     }
 
     public function testGetItemsWithCustomRoutes()
@@ -94,27 +109,27 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testAccessingSitemapRootXMLFile()
     {
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_OtherDataObject");
+        GoogleSitemap::register_dataobject(TestDataObject::class);
+        GoogleSitemap::register_dataobject(OtherDataObject::class);
 
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
 
         // the sitemap should contain <loc> to both those files and not the other
         // dataobject as it hasn't been registered
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1") ."</loc>";
+        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1") ."</loc>";
         $this->assertEquals(1, substr_count($body, $expected), 'A link to GoogleSitemapTest_DataObject exists');
 
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_OtherDataObject/1") ."</loc>";
+        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-OtherDataObject/1") ."</loc>";
         $this->assertEquals(1, substr_count($body, $expected), 'A link to GoogleSitemapTest_OtherDataObject exists');
 
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_UnviewableDataObject/2") ."</loc>";
+        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-UnviewableDataObject/2") ."</loc>";
         $this->assertEquals(0, substr_count($body, $expected), 'A link to a GoogleSitemapTest_UnviewableDataObject does not exist');
     }
 
     public function testLastModifiedDateOnRootXML()
     {
-        Config::inst()->update('GoogleSitemap', 'enabled', true);
+        Config::inst()->update(GoogleSitemap::class, 'enabled', true);
 
         if (!class_exists('Page')) {
             $this->markTestIncomplete('No cms module installed, page related test skipped');
@@ -142,18 +157,18 @@ class GoogleSitemapTest extends FunctionalTest
     public function testIndexFilePaginatedSitemapFiles()
     {
         $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+        Config::inst()->update(GoogleSitemap::class, 'objects_per_sitemap', 1);
+        GoogleSitemap::register_dataobject(TestDataObject::class);
 
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1") ."</loc>";
+        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1") ."</loc>";
         $this->assertEquals(1, substr_count($body, $expected), 'A link to the first page of GoogleSitemapTest_DataObject exists');
 
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/GoogleSitemapTest_DataObject/2") ."</loc>";
+        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/2") ."</loc>";
         $this->assertEquals(1, substr_count($body, $expected), 'A link to the second page GoogleSitemapTest_DataObject exists');
 
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+        Config::inst()->update(GoogleSitemap::class, 'objects_per_sitemap', $original);
     }
 
     public function testRegisterRoutesIncludesAllRoutes()
@@ -175,57 +190,15 @@ class GoogleSitemapTest extends FunctionalTest
     public function testAccessingNestedSiteMap()
     {
         $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
+        Config::inst()->update(GoogleSitemap::class, 'objects_per_sitemap', 1);
+        GoogleSitemap::register_dataobject(TestDataObject::class);
 
-        $response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+        $response = $this->get('sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1');
         $body = $response->getBody();
 
         $this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
 
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
-    }
-
-    public function testAccessingNestedSiteMapCaseInsensitive()
-    {
-        $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
-
-        $response = $this->get('sitemap.xml/sitemap/googlesitemaptest_dataobject/1');
-        $body = $response->getBody();
-
-        $this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
-
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
-    }
-
-    public function testAccessingNestedNamespacedSiteMap()
-    {
-        $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
-        GoogleSitemap::register_dataobject("SilverStripe\\GoogleSitemaps\\Test_DataObject");
-
-        $response = $this->get('sitemap.xml/sitemap/SilverStripe-GoogleSitemaps-Test_DataObject/1');
-        $body = $response->getBody();
-
-        $this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
-
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
-    }
-
-    public function testAccessingNestedNamespacedSiteMapCaseInsensitive()
-    {
-        $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', 1);
-        GoogleSitemap::register_dataobject("SilverStripe\\GoogleSitemaps\\Test_DataObject");
-
-        $response = $this->get('sitemap.xml/sitemap/silverstripe-googlesitemaps-test_dataobject/1');
-        $body = $response->getBody();
-
-        $this->assertEquals(200, $response->getStatusCode(), 'successful loaded nested sitemap');
-
-        Config::inst()->update('GoogleSitemap', 'objects_per_sitemap', $original);
+        Config::inst()->update(GoogleSitemap::class, 'objects_per_sitemap', $original);
     }
 
     public function testGetItemsWithPages()
@@ -245,41 +218,40 @@ class GoogleSitemapTest extends FunctionalTest
         $this->assertDOSContains(array(
             array('Title' => 'Testpage1'),
             array('Title' => 'Testpage2')
-        ), GoogleSitemap::get_items(SiteTree::class), "There should be 2 pages in the sitemap after publishing");
+        ), GoogleSitemap::get_items('\SilverStripe\CMS\Model\SiteTree'), "There should be 2 pages in the sitemap after publishing");
 
         // check if we make a page readonly that it is hidden
         $page2->CanViewType = 'LoggedInUsers';
         $page2->write();
         $page2->publish('Stage', 'Live');
 
-        $this->session()->inst_set('loggedInAs', null);
+        $this->logOut();
 
         $this->assertDOSEquals(array(
             array('Title' => 'Testpage1')
-        ), GoogleSitemap::get_items(SiteTree::class), "There should be only 1 page, other is logged in only");
+        ), GoogleSitemap::get_items('\SilverStripe\CMS\Model\SiteTree'), "There should be only 1 page, other is logged in only");
     }
 
     public function testAccess()
     {
-        Config::inst()->update('GoogleSitemap', 'enabled', true);
+        Config::inst()->update(GoogleSitemap::class, 'enabled', true);
 
         $response = $this->get('sitemap.xml');
 
         $this->assertEquals(200, $response->getStatusCode(), 'Sitemap returns a 200 success when enabled');
         $this->assertEquals('application/xml; charset="utf-8"', $response->getHeader('Content-Type'));
 
-        GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
-        $response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+        GoogleSitemap::register_dataobject(TestDataObject::class);
+        $response = $this->get('sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1');
         $this->assertEquals(200, $response->getStatusCode(), 'Sitemap returns a 200 success when enabled');
         $this->assertEquals('application/xml; charset="utf-8"', $response->getHeader('Content-Type'));
 
-        Config::inst()->remove('GoogleSitemap', 'enabled');
-        Config::inst()->update('GoogleSitemap', 'enabled', false);
+        Config::inst()->update(GoogleSitemap::class, 'enabled', false);
 
         $response = $this->get('sitemap.xml');
         $this->assertEquals(404, $response->getStatusCode(), 'Sitemap index returns a 404 when disabled');
 
-        $response = $this->get('sitemap.xml/sitemap/GoogleSitemapTest_DataObject/1');
+        $response = $this->get('sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1');
         $this->assertEquals(404, $response->getStatusCode(), 'Sitemap file returns a 404 when disabled');
     }
 
@@ -322,16 +294,16 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testUnpublishedPage()
     {
-        if (!class_exists(SiteTree::class)) {
+        if (!class_exists('SilverStripe\CMS\SiteTree')) {
             $this->markTestSkipped('Test skipped; CMS module required for testUnpublishedPage');
         }
 
-        $orphanedPage = new SiteTree();
+        $orphanedPage = new \SilverStripe\CMS\SiteTree();
         $orphanedPage->ParentID = 999999; // missing parent id
         $orphanedPage->write();
         $orphanedPage->publish("Stage", "Live");
 
-        $rootPage = new SiteTree();
+        $rootPage = new \SilverStripe\CMS\SiteTree();
         $rootPage->ParentID = 0;
         $rootPage->write();
         $rootPage->publish("Stage", "Live");
@@ -350,71 +322,5 @@ class GoogleSitemapTest extends FunctionalTest
         } // finally {
             Versioned::set_reading_mode($oldMode);
         // }
-    }
-}
-
-/**
- * @package googlesitemaps
- * @subpackage tests
- */
-class GoogleSitemapTest_DataObject extends DataObject implements TestOnly
-{
-
-    private static $db = array(
-        'Priority' => 'Varchar(10)'
-    );
-
-    public function canView($member = null)
-    {
-        return true;
-    }
-
-    public function AbsoluteLink()
-    {
-        return Director::absoluteBaseURL();
-    }
-}
-
-/**
- * @package googlesitemaps
- * @subpackage tests
- */
-class GoogleSitemapTest_OtherDataObject extends DataObject implements TestOnly
-{
-
-    private static $db = array(
-        'Priority' => 'Varchar(10)'
-    );
-
-    public function canView($member = null)
-    {
-        return true;
-    }
-
-    public function AbsoluteLink()
-    {
-        return Director::absoluteBaseURL();
-    }
-}
-
-/**
- * @package googlesitemaps
- * @subpackage tests
- */
-class GoogleSitemapTest_UnviewableDataObject extends DataObject implements TestOnly
-{
-
-    private static $db = array(
-        'Priority' => 'Varchar(10)'
-    );
-
-    public function canView($member = null)
-    {
-        return false;
-    }
-
-    public function AbsoluteLink()
-    {
-        return Director::absoluteBaseURL();
     }
 }

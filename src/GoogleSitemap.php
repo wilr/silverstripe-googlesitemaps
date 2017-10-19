@@ -2,7 +2,6 @@
 
 namespace Wilr\GoogleSitemaps;
 
-use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
@@ -14,7 +13,10 @@ use SilverStripe\View\ArrayData;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Config\Configurable;
+use Wilr\GoogleSitemaps\Extensions\GoogleSitemapExtension;
 use ReflectionClass;
+use ReflectionException;
+
 /**
  * Sitemaps are a way to tell Google about pages on your site that they might
  * not otherwise discover. In its simplest terms, a XML Sitemap usually called
@@ -24,16 +26,18 @@ use ReflectionClass;
  * all the  pages on your site, including URLs that may not be discoverable by
  * Google's normal crawling process.
  *
- * The GoogleSitemap handle requests to 'sitemap.xml'
- * the other two classes are used to render the sitemap.
+ * The GoogleSitemap handle requests to 'sitemap.xml' the other two classes are
+ * used to render the sitemap.
  *
- * You can notify ("ping") Google about a changed sitemap
- * automatically whenever a new page is published or unpublished.
- * By default, Google is not notified, and will pick up your new
- * sitemap whenever the GoogleBot visits your website.
+ * You can notify ("ping") Google about a changed sitemap automatically whenever
+ * a new page is published or unpublished.
+ *
+ * By default, Google is not notified, and will pick up your new sitemap
+ * whenever the GoogleBot visits your website.
  *
  * To Enable notification of Google after every publish set google_notification_enabled
  * to true in the googlesitemaps.yml config file.
+ *
  * This file is usually located in the _config folder of your project folder.
  * e.g mysite/_config/googlesitemaps.yml
  *
@@ -42,7 +46,7 @@ use ReflectionClass;
  *	Name: customgooglesitemaps
  *	After: googlesitemaps
  *	---
- *	GoogleSitemap:
+ *	Wilr\GoogleSitemaps\GoogleSitemap:
  * 		enabled: true
  * 		objects_per_sitemap: 1000
  * 		google_notification_enabled: true
@@ -63,7 +67,7 @@ class GoogleSitemap
      *
      * @var array
      */
-    private static $dataobjects = array();
+    private static $dataobjects = [];
 
     /**
      * List of custom routes to include in the sitemap (such as controller
@@ -71,7 +75,7 @@ class GoogleSitemap
      *
      * @var array
      */
-    private static $routes = array();
+    private static $routes = [];
 
     /**
      * @config
@@ -97,7 +101,7 @@ class GoogleSitemap
     public static function register_dataobject($className, $changeFreq = 'monthly', $priority = '0.6')
     {
         if (!self::is_registered($className)) {
-            $className::add_extension('GoogleSitemapExtension');
+            $className::add_extension(GoogleSitemapExtension::class);
 
             self::$dataobjects[$className] = array(
                 'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
@@ -242,8 +246,8 @@ class GoogleSitemap
             Translatable::disable_locale_filter();
         }
 
-        if ($class == SiteTree::class) {
-            $instances = Versioned::get_by_stage(SiteTree::class, 'Live');
+        if ($class == 'SilverStripe\CMS\Model\SiteTree') {
+            $instances = Versioned::get_by_stage('SilverStripe\CMS\Model\SiteTree', 'Live');
 
             if($filter) {
                 $instances = $instances->filter('ShowInSearch', 1);
@@ -358,7 +362,7 @@ class GoogleSitemap
         $sitemaps = new ArrayList();
         $filter = Config::inst()->get(__CLASS__, 'use_show_in_search');
 
-        if (class_exists(SiteTree::class)) {
+        if (class_exists('SilverStripe\CMS\Model\SiteTree')) {
             // move to extension hook. At the moment moduleexists config hook
             // does not work.
             if (class_exists('Translatable')) {
@@ -366,7 +370,7 @@ class GoogleSitemap
             }
 
             $filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
-            $class = SiteTree::class;
+            $class = 'SilverStripe\CMS\Model\SiteTree';
             $instances = Versioned::get_by_stage($class, 'Live', $filter);
             $this->extend("alterDataList", $instances, $class);
             $count = $instances->count();
@@ -382,7 +386,7 @@ class GoogleSitemap
                 $lastModified = ($lastEdited) ? date('Y-m-d', strtotime($lastEdited)) : date('Y-m-d');
 
                 $sitemaps->push(new ArrayData(array(
-                    'ClassName' => $this->sanitiseClassName(SiteTree::class),
+                    'ClassName' => $this->sanitiseClassName('SilverStripe\CMS\Model\SiteTree'),
                     'LastModified' => $lastModified,
                     'Page' => $i
                 )));

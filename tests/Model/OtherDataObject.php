@@ -1,16 +1,16 @@
 <?php
 
-namespace SilverStripe\GoogleSitemaps;
+namespace Wilr\GoogleSitemaps\Tests\Model;
 
-use SilverStripe\Control\Director;
-use SilverStripe\Dev\TestOnly;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\Dev\TestOnly;
+use SilverStripe\Control\Director;
 
-class Test_DataObject extends DataObject implements TestOnly
+class OtherDataObject extends DataObject implements TestOnly
 {
-    private static $db = [
+    private static $db = array(
         'Priority' => 'Varchar(10)'
-    ];
+    );
 
     public function canView($member = null)
     {

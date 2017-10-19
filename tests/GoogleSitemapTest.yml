@@ -1,4 +1,4 @@
-GoogleSitemapTest_DataObject:
+Wilr\GoogleSitemaps\Tests\Model\TestDataObject:
     DataObjectTest1:
         Priority: 0.4
     DataObjectTest2:
@@ -6,10 +6,10 @@ GoogleSitemapTest_DataObject:
     UnindexedDataObject:
       Priority: -1
 
-GoogleSitemapTest_OtherDataObject:
+Wilr\GoogleSitemaps\Tests\Model\OtherDataObject:
     OtherDataObjectTest2:
         Priority: 0.3
 
-GoogleSitemapTest_UnviewableDataObject:
+Wilr\GoogleSitemaps\Tests\Model\UnviewableDataObject:
     Unviewable1:
         Priority: 0.4
