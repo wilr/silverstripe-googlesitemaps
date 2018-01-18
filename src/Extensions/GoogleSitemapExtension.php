@@ -35,7 +35,7 @@ class GoogleSitemapExtension extends DataExtension
         }
 
         if ($can) {
-            $can = $this->owner->getGooglePriority();
+            $can = ($this->owner->getGooglePriority() !== false);
         }
 
         if ($can === false) {
@@ -81,8 +81,10 @@ class GoogleSitemapExtension extends DataExtension
     {
         $field = $this->owner->hasField('Priority');
 
-        if (isset($this->Priority) || ($field && $this->Priority = $this->owner->getField('Priority'))) {
-            return ($this->Priority < 0) ? false : $this->Priority;
+        if ($field) {
+            $priority = $this->owner->getField('Priority');
+
+            return ($priority < 0) ? false : $priority;
         }
 
         return GoogleSitemap::get_priority_for_class($this->owner->class);

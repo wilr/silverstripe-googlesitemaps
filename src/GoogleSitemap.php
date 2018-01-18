@@ -103,10 +103,10 @@ class GoogleSitemap
         if (!self::is_registered($className)) {
             $className::add_extension(GoogleSitemapExtension::class);
 
-            self::$dataobjects[$className] = array(
+            self::$dataobjects[$className] = [
                 'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
                 'priority' => ($priority) ? $priority : '0.6'
-            );
+            ];
         }
     }
 

@@ -294,16 +294,16 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testUnpublishedPage()
     {
-        if (!class_exists('SilverStripe\CMS\SiteTree')) {
+        if (!class_exists('SilverStripe\CMS\Model\SiteTree')) {
             $this->markTestSkipped('Test skipped; CMS module required for testUnpublishedPage');
         }
 
-        $orphanedPage = new \SilverStripe\CMS\SiteTree();
+        $orphanedPage = new \SilverStripe\CMS\Model\SiteTree();
         $orphanedPage->ParentID = 999999; // missing parent id
         $orphanedPage->write();
         $orphanedPage->publish("Stage", "Live");
 
-        $rootPage = new \SilverStripe\CMS\SiteTree();
+        $rootPage = new \SilverStripe\CMS\Model\SiteTree();
         $rootPage->ParentID = 0;
         $rootPage->write();
         $rootPage->publish("Stage", "Live");
