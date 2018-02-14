@@ -2,22 +2,21 @@
 
 namespace Wilr\GoogleSitemaps\Tests;
 
+use Exception;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\FunctionalTest;
-use SilverStripe\Dev\TestOnly;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Versioned\Versioned;
-use Wilr\GoogleSitemaps\GoogleSitemap;
 use Wilr\GoogleSitemaps\Extensions\GoogleSitemapExtension;
-use Wilr\GoogleSitemaps\Tests\Model\TestDataObject;
+use Wilr\GoogleSitemaps\GoogleSitemap;
 use Wilr\GoogleSitemaps\Tests\Model\OtherDataObject;
+use Wilr\GoogleSitemaps\Tests\Model\TestDataObject;
 use Wilr\GoogleSitemaps\Tests\Model\UnviewableDataObject;
-use Exception;
 
 class GoogleSitemapTest extends FunctionalTest
 {
@@ -117,14 +116,32 @@ class GoogleSitemapTest extends FunctionalTest
 
         // the sitemap should contain <loc> to both those files and not the other
         // dataobject as it hasn't been registered
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1") ."</loc>";
-        $this->assertEquals(1, substr_count($body, $expected), 'A link to GoogleSitemapTest_DataObject exists');
+        $expected = "<loc>". Director::absoluteURL(
+            "sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1"
+        ) ."</loc>";
+        $this->assertEquals(
+            1,
+            substr_count($body, $expected),
+            'A link to GoogleSitemapTest_DataObject exists'
+        );
 
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-OtherDataObject/1") ."</loc>";
-        $this->assertEquals(1, substr_count($body, $expected), 'A link to GoogleSitemapTest_OtherDataObject exists');
+        $expected = "<loc>". Director::absoluteURL(
+            "sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-OtherDataObject/1"
+        ) ."</loc>";
+        $this->assertEquals(
+            1,
+            substr_count($body, $expected),
+            'A link to GoogleSitemapTest_OtherDataObject exists'
+        );
 
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-UnviewableDataObject/2") ."</loc>";
-        $this->assertEquals(0, substr_count($body, $expected), 'A link to a GoogleSitemapTest_UnviewableDataObject does not exist');
+        $expected = "<loc>". Director::absoluteURL(
+            "sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-UnviewableDataObject/2"
+        ) ."</loc>";
+        $this->assertEquals(
+            0,
+            substr_count($body, $expected),
+            'A link to a GoogleSitemapTest_UnviewableDataObject does not exist'
+        );
     }
 
     public function testLastModifiedDateOnRootXML()
@@ -151,7 +168,11 @@ class GoogleSitemapTest extends FunctionalTest
 
         $expected = '<lastmod>2014-03-14</lastmod>';
 
-        $this->assertEquals(1, substr_count($body, $expected), 'The last mod date should use most recent LastEdited date');
+        $this->assertEquals(
+            1,
+            substr_count($body, $expected),
+            'The last mod date should use most recent LastEdited date'
+        );
     }
 
     public function testIndexFilePaginatedSitemapFiles()
@@ -162,11 +183,23 @@ class GoogleSitemapTest extends FunctionalTest
 
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1") ."</loc>";
-        $this->assertEquals(1, substr_count($body, $expected), 'A link to the first page of GoogleSitemapTest_DataObject exists');
+        $expected = "<loc>". Director::absoluteURL(
+            "sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1"
+        ) ."</loc>";
+        $this->assertEquals(
+            1,
+            substr_count($body, $expected),
+            'A link to the first page of GoogleSitemapTest_DataObject exists'
+        );
 
-        $expected = "<loc>". Director::absoluteURL("sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/2") ."</loc>";
-        $this->assertEquals(1, substr_count($body, $expected), 'A link to the second page GoogleSitemapTest_DataObject exists');
+        $expected = "<loc>". Director::absoluteURL(
+            "sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/2"
+        ) ."</loc>";
+        $this->assertEquals(
+            1,
+            substr_count($body, $expected),
+            'A link to the second page GoogleSitemapTest_DataObject exists'
+        );
 
         Config::inst()->update(GoogleSitemap::class, 'objects_per_sitemap', $original);
     }
@@ -218,7 +251,7 @@ class GoogleSitemapTest extends FunctionalTest
         $this->assertDOSContains(array(
             array('Title' => 'Testpage1'),
             array('Title' => 'Testpage2')
-        ), GoogleSitemap::get_items('\SilverStripe\CMS\Model\SiteTree'), "There should be 2 pages in the sitemap after publishing");
+        ), GoogleSitemap::inst()->getItems(SiteTree::class), "There should be 2 pages in the sitemap after publishing");
 
         // check if we make a page readonly that it is hidden
         $page2->CanViewType = 'LoggedInUsers';
@@ -229,7 +262,7 @@ class GoogleSitemapTest extends FunctionalTest
 
         $this->assertDOSEquals(array(
             array('Title' => 'Testpage1')
-        ), GoogleSitemap::get_items('\SilverStripe\CMS\Model\SiteTree'), "There should be only 1 page, other is logged in only");
+        ), GoogleSitemap::inst()->getItems(SiteTree::class), "There should be only 1 page, other is logged in only");
     }
 
     public function testAccess()

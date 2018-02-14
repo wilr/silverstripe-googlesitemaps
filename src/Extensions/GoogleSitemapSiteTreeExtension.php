@@ -39,14 +39,26 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         $tabset = $fields->findOrMakeTab('Root.Settings');
 
         $message = "<p>";
-        $message .= sprintf(_t('GoogleSitemaps.METANOTEPRIORITY', "Manually specify a Google Sitemaps priority for this page (%s)"),
-            '<a href="http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=71936#prioritize" target="_blank">?</a>'
+        $message .= sprintf(
+            _t(
+                'GoogleSitemaps.METANOTEPRIORITY',
+                "Manually specify a Google Sitemaps priority for this page (%s)"
+            ),
+            '<a href="http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=71936#prioritize" '
+            . 'target="_blank">?</a>'
         );
         $message .=  "</p>";
 
-        $tabset->push(new Tab('GoogleSitemap', _t('GoogleSitemaps.TABGOOGLESITEMAP', 'Google Sitemap'),
-            new LiteralField("GoogleSitemapIntro", $message),
-            $priority = new DropdownField("Priority", $this->owner->fieldLabel('Priority'), $prorities, $this->owner->Priority)
+        $tabset->push(new Tab(
+            'GoogleSitemap',
+            _t('GoogleSitemaps.TABGOOGLESITEMAP', 'Google Sitemap'),
+            LiteralField::create("GoogleSitemapIntro", $message),
+            $priority = DropdownField::create(
+                "Priority",
+                $this->owner->fieldLabel('Priority'),
+                $prorities,
+                $this->owner->Priority
+            )
         ));
 
         $priority->setEmptyString(_t('GoogleSitemaps.PRIORITYAUTOSET', 'Auto-set based on page depth'));

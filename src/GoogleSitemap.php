@@ -42,15 +42,15 @@ use ReflectionException;
  * e.g mysite/_config/googlesitemaps.yml
  *
  * <example>
- *	---
- *	Name: customgooglesitemaps
- *	After: googlesitemaps
- *	---
- *	Wilr\GoogleSitemaps\GoogleSitemap:
- * 		enabled: true
- * 		objects_per_sitemap: 1000
- * 		google_notification_enabled: true
- * 		use_show_in_search: true
+ *  ---
+ *  Name: customgooglesitemaps
+ *  After: googlesitemaps
+ *  ---
+ *  Wilr\GoogleSitemaps\GoogleSitemap:
+ *      enabled: true
+ *      objects_per_sitemap: 1000
+ *      google_notification_enabled: true
+ *      use_show_in_search: true
  * </example>
  *
  * @see http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=34609
@@ -249,11 +249,11 @@ class GoogleSitemap
         if ($class == 'SilverStripe\CMS\Model\SiteTree') {
             $instances = Versioned::get_by_stage('SilverStripe\CMS\Model\SiteTree', 'Live');
 
-            if($filter) {
+            if ($filter) {
                 $instances = $instances->filter('ShowInSearch', 1);
             }
 
-            if($redirector) {
+            if ($redirector) {
                 foreach (ClassInfo::subclassesFor('SilverStripe\\CMS\\Model\\RedirectorPage') as $redirectorClass) {
                     $instances = $instances->exclude('ClassName', $redirectorClass);
                 }
@@ -473,15 +473,19 @@ class GoogleSitemap
         ));
 
         $googleResponse = self::send_ping(
-            "www.google.com", "/webmasters/sitemaps/ping", sprintf("sitemap=%s", $location)
+            "www.google.com",
+            "/webmasters/sitemaps/ping",
+            sprintf("sitemap=%s", $location)
         );
 
         // bing
         $bing = Config::inst()->get(__CLASS__, 'bing_notification_enabled');
 
-        if($bing) {
+        if ($bing) {
             $bingResponse = self::send_ping(
-                "www.bing.com", "/ping", sprintf("sitemap=%s", $location)
+                "www.bing.com",
+                "/ping",
+                sprintf("sitemap=%s", $location)
             );
         }
 
