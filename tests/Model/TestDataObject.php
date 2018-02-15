@@ -6,7 +6,6 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\Control\Director;
 
-
 class TestDataObject extends DataObject implements TestOnly
 {
 
