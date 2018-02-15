@@ -2,7 +2,7 @@
 
 namespace Wilr\GoogleSitemaps\Extensions;
 
-use SilverStripe\CMS\Model\ErrorPage;
+use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
