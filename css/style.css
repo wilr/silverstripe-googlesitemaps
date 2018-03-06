@@ -101,7 +101,6 @@ table.tablesorter thead tr .headerSortDown {
 table.tablesorter tbody td {
 	color: #005A92;
 	padding: 4px;
-
 	vertical-align: top;
 }
 table.tablesorter tbody tr{
@@ -124,6 +123,20 @@ table.tablesorter tbody tr:hover td,
 table.tablesorter tbody tr:hover a{
   color: #000;
 }
+table.imagestable,
+table.imagestable a {
+    font-size: 8pt;
+}
+table.imagestable {
+    margin-top: 15px;
+}
+table.imagestable tr.odd {
+    background: transparent;
+}
+table.imagestable tr.even {
+    background: transparent;
+}
+
 #Footer{
   margin: 50px 0 10px;
   text-align: right;

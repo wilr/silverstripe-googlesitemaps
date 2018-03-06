@@ -37,9 +37,36 @@
                     <xsl:variable name="itemURL">
                       <xsl:value-of select="sitemap:loc"/>
                     </xsl:variable>
+                    <xsl:variable name="imagesCount" select="count(image:image)"/>
                     <a href="{$itemURL}">
                       <xsl:value-of select="sitemap:loc"/>
                     </a>
+
+
+                    <xsl:if test="$imagesCount &gt; 0">
+                      <table class="imagestable" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <th>Images</th>
+                        </tr>
+                        <xsl:for-each select="image:image">
+                          <xsl:variable name="imageURL">
+                            <xsl:value-of select="image:loc"/>
+                          </xsl:variable>
+                          <tr>
+                            <td>
+                              <img src="{$imageURL}" width="40px"/>
+                            </td>
+                            <td>
+                              <a href="{$imageURL}">
+                                <xsl:value-of select="image:loc"/>
+                              </a>
+                            </td>
+                          </tr>
+                        </xsl:for-each>
+                      </table>
+                    </xsl:if>
+
+
                   </td>
                   <td>
                     <xsl:value-of select="concat(sitemap:priority*100,'%')"/>

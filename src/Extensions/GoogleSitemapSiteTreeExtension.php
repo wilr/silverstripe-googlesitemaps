@@ -2,6 +2,7 @@
 
 namespace Wilr\GoogleSitemaps\Extensions;
 
+use SilverStripe\Assets\Image;
 use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
@@ -47,7 +48,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             '<a href="http://www.google.com/support/webmasters/bin/answer.py?hl=en&answer=71936#prioritize" '
             . 'target="_blank">?</a>'
         );
-        $message .=  "</p>";
+        $message .= "</p>";
 
         $tabset->push(new Tab(
             'GoogleSitemap',
@@ -138,4 +139,32 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             return (is_numeric($priority) && $priority <= 1.0) ? $priority : 0.5;
         }
     }
+
+    public function ImagesForSitemap()
+    {
+        $list = new ArrayList();
+
+        foreach ($this->owner->hasOne() as $field => $type) {
+            if (singleton($type) instanceof Image) {
+                $image = $this->owner->getComponent($field);
+                if ($image && $image->exists()) {
+                    $list->push($image);
+                }
+            }
+        }
+        foreach ($this->owner->hasMany() as $field => $type) {
+            if (singleton($type) instanceof Image) {
+                $images = $this->owner->getComponents($field);
+                foreach ($images as $image) {
+                    if ($image && $image->exists()) {
+                        $list->push($image);
+                    }
+                }
+            }
+        }
+
+        $this->owner->extend('updateImagesForSitemap', $list);
+        return $list;
+    }
+
 }
