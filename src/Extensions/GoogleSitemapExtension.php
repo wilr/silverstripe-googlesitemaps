@@ -5,6 +5,7 @@ namespace Wilr\GoogleSitemaps\Extensions;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\FieldType\DBDatetime;
+use SilverStripe\Subsites\Model\Subsite;
 use Wilr\GoogleSitemaps\GoogleSitemap;
 
 /**
@@ -23,6 +24,15 @@ class GoogleSitemapExtension extends DataExtension
 
         if ($this->owner->hasMethod('AbsoluteLink')) {
             $hostHttp = parse_url(Director::protocolAndHost(), PHP_URL_HOST);
+
+            // Subsite support
+            if (class_exists(Subsite::class)) {
+                // Subsite will have a different domain from Director::protocolAndHost
+                if ($subsite = Subsite::currentSubsite()) {
+                    $hostHttp = parse_url(Director::protocol() . $subsite->getPrimaryDomain(), PHP_URL_HOST);
+                }
+            }
+
             $objHttp = parse_url($this->owner->AbsoluteLink(), PHP_URL_HOST);
 
             if ($objHttp != $hostHttp) {
