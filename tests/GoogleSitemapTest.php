@@ -95,7 +95,7 @@ class GoogleSitemapTest extends FunctionalTest {
 		GoogleSitemap::register_dataobject("GoogleSitemapTest_DataObject");
 
 		DB::query("
-			UPDATE GoogleSitemapTest_DataObject SET LastEdited = '2012-01-14'"
+			UPDATE \"GoogleSitemapTest_DataObject\" SET \"LastEdited\" = '2012-01-14'"
 		);
 
 		$response = $this->get('sitemap.xml');
