@@ -4,34 +4,40 @@ sudo: false
 
 language: php
 
+dist: precise
+
 php:
   - 5.3
   - 5.4
   - 5.5
   - 5.6
   - 7.0
+  - 7.1
 
 env:
-  - DB=MYSQL CORE_RELEASE=3.2
+  - DB=MYSQL CORE_RELEASE=3.6
 
 matrix:
   include:
     - php: 5.6
-      env: DB=MYSQL CORE_RELEASE=3
+      env: DB=MYSQL CORE_RELEASE=3.5
     - php: 5.6
-      env: DB=MYSQL CORE_RELEASE=3.1
-    - php: 5.6
-      env: DB=PGSQL CORE_RELEASE=3.2
+      env: DB=PGSQL CORE_RELEASE=3.6
+    - php: 7.2
+      env: CORE_RELEASE=3
+    - php: nightly
+      env: CORE_RELEASE=3
   allow_failures:
-    - php: 7.0
+    - php: 7.2
+      env: CORE_RELEASE=3
+    - php: nightly
+      env: CORE_RELEASE=3
 
 before_script:
   - composer self-update || true
   - git clone git://github.com/silverstripe-labs/silverstripe-travis-support.git ~/travis-support
   - php ~/travis-support/travis_setup.php --source `pwd` --target ~/builds/ss
   - cd ~/builds/ss
-  - composer install
-  - composer require wilr/silverstripe-googlesitemaps
 
 script:
   - vendor/bin/phpunit googlesitemaps/tests
