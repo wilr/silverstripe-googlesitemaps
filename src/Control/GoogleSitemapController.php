@@ -30,7 +30,9 @@ class GoogleSitemapController extends Controller
      */
     private static $allowed_actions = [
         'index',
-        'sitemap'
+        'sitemap',
+        'styleSheetIndex',
+        'styleSheet'
     ];
 
 
@@ -96,13 +98,13 @@ class GoogleSitemapController extends Controller
         return str_replace('-', '\\', $class);
     }
 
-    public function StylesheetIndexPath()
+    public function styleSheetIndex()
     {
-        return ModuleResourceLoader::resourceURL('wilr/silverstripe-googlesitemaps:xsl/xml-sitemapindex.xsl');
+        return $this->renderWith('xml-sitemapindex');
     }
 
-    public function StylesheetPath()
+    public function styleSheet()
     {
-        return ModuleResourceLoader::resourceURL('wilr/silverstripe-googlesitemaps:xsl/xml-sitemap.xsl');
+        return $this->renderWith('xml-sitemap');
     }
 }

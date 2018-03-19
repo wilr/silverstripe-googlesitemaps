@@ -7,20 +7,14 @@ use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
+use SilverStripe\ORM\ArrayList;
 
 class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
 {
-
-    /**
-     * @var array
-     */
-    private static $db = array(
+    private static $db = [
         "Priority" => "Varchar(5)"
-    );
+    ];
 
-    /**
-     * @param FieldList
-     */
     public function updateSettingsFields(&$fields)
     {
         $prorities = array(
@@ -65,11 +59,6 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         $priority->setEmptyString(_t('GoogleSitemaps.PRIORITYAUTOSET', 'Auto-set based on page depth'));
     }
 
-    /**
-     * @param FieldList
-     *
-     * @return void
-     */
     public function updateFieldLabels(&$labels)
     {
         parent::updateFieldLabels($labels);
@@ -143,20 +132,28 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
     public function ImagesForSitemap()
     {
         $list = new ArrayList();
+        $cachedImages = [];
 
         foreach ($this->owner->hasOne() as $field => $type) {
             if (singleton($type) instanceof Image) {
                 $image = $this->owner->getComponent($field);
-                if ($image && $image->exists()) {
+
+                if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                    $cachedImages[$image->ID] = true;
+
                     $list->push($image);
                 }
             }
         }
+
         foreach ($this->owner->hasMany() as $field => $type) {
             if (singleton($type) instanceof Image) {
                 $images = $this->owner->getComponents($field);
+
                 foreach ($images as $image) {
-                    if ($image && $image->exists()) {
+                    if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                        $cachedImages[$image->ID] = true;
+
                         $list->push($image);
                     }
                 }
@@ -164,6 +161,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         }
 
         $this->owner->extend('updateImagesForSitemap', $list);
+
         return $list;
     }
 }

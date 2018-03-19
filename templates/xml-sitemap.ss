@@ -6,7 +6,7 @@
       <head>
         <title>XML Sitemap</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <link rel="stylesheet" href="resources/wilr/silverstripe-googlesitemaps/css/style.css" />
+        <link rel="stylesheet" href="{$BaseHref}resources/wilr/silverstripe-googlesitemaps/css/style.css" />
       </head>
       <body>
         <div id="content">
@@ -17,27 +17,62 @@
           </h1>
 
           <p class="expl">
-            This sitemap consists of <xsl:value-of select="count(sitemap:sitemapindex/sitemap:sitemap)"/> part(s).
+            This sitemap contains <xsl:value-of select="count(sitemap:urlset/sitemap:url)"/> URLs.
           </p>
-          <table id="sitemapindex" cellpadding="3" class="tablesorter">
+          <table id="sitemap" cellpadding="3" class="tablesorter">
             <thead>
               <tr>
-                <th width="90%">URL</th>
+                <th width="76%">URL</th>
+                <th width="7%">Priority</th>
+                <th width="7%">Change Freq.</th>
                 <th width="10%">Last Change</th>
               </tr>
             </thead>
             <tbody>
               <xsl:variable name="lower" select="'abcdefghijklmnopqrstuvwxyz'"/>
               <xsl:variable name="upper" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
-              <xsl:for-each select="sitemap:sitemapindex/sitemap:sitemap">
+              <xsl:for-each select="sitemap:urlset/sitemap:url">
                 <tr>
                   <td>
                     <xsl:variable name="itemURL">
                       <xsl:value-of select="sitemap:loc"/>
                     </xsl:variable>
-                    <a href="{$itemURL}">
+                    <xsl:variable name="imagesCount" select="count(image:image)"/>
+                    <a href="{\$itemURL}">
                       <xsl:value-of select="sitemap:loc"/>
                     </a>
+
+
+                    <xsl:if test="\$imagesCount &gt; 0">
+                      <table class="imagestable" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <th>Images</th>
+                        </tr>
+                        <xsl:for-each select="image:image">
+                          <xsl:variable name="imageURL">
+                            <xsl:value-of select="image:loc"/>
+                          </xsl:variable>
+                          <tr>
+                            <td>
+                              <img src="{\$imageURL}" width="40px"/>
+                            </td>
+                            <td>
+                              <a href="{\$imageURL}">
+                                <xsl:value-of select="image:loc"/>
+                              </a>
+                            </td>
+                          </tr>
+                        </xsl:for-each>
+                      </table>
+                    </xsl:if>
+
+
+                  </td>
+                  <td>
+                    <xsl:value-of select="concat(sitemap:priority*100,'%')"/>
+                  </td>
+                  <td>
+                    <xsl:value-of select="concat(translate(substring(sitemap:changefreq, 1, 1),concat(\$lower, \$upper),concat(\$upper, \$lower)),substring(sitemap:changefreq, 2))"/>
                   </td>
                   <td>
                     <xsl:value-of select="concat(substring(sitemap:lastmod,0,11),concat(' ', substring(sitemap:lastmod,12,5)))"/>
