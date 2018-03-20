@@ -22,7 +22,6 @@
         },
         "expose": [
             "images",
-            "xsl",
             "css"
         ]
     },
