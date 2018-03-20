@@ -125,11 +125,16 @@ class GoogleSitemapExtension extends DataExtension
         $now->value = $date;
 
         $versions = ($this->owner->Version) ? $this->owner->Version : 1;
-        $timediff = $now->format('U') - $created->format('U');
 
-        // Check how many revisions have been made over the lifetime of the
-        // Page for a rough estimate of it's changing frequency.
-        $period = $timediff / ($versions + 1);
+        if ($now && $created) {
+            $timediff = $now->getTimestamp() - $created->getTimestamp();
+
+            // Check how many revisions have been made over the lifetime of the
+            // Page for a rough estimate of it's changing frequency.
+            $period = $timediff / ($versions + 1);
+        } else {
+            $period = 0;
+        }
 
         if ($period > 60 * 60 * 24 * 365) {
             $freq = 'yearly';
