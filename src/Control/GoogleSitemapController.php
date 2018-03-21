@@ -98,13 +98,29 @@ class GoogleSitemapController extends Controller
         return str_replace('-', '\\', $class);
     }
 
+    /**
+     * Render the stylesheet for the sitemap index
+     *
+     * @return DBHTMLText
+     */
     public function styleSheetIndex()
     {
-        return $this->renderWith('xml-sitemapindex');
+        $html = $this->renderWith('xml-sitemapindex');
+        $this->getResponse()->addHeader('Content-Type', 'text/xsl; charset="utf-8"');
+
+        return $html;
     }
 
+    /**
+     * Render the stylesheet for the sitemap
+     *
+     * @return DBHTMLText
+     */
     public function styleSheet()
     {
-        return $this->renderWith('xml-sitemap');
+        $html = $this->renderWith('xml-sitemap');
+        $this->getResponse()->addHeader('Content-Type', 'text/xsl; charset="utf-8"');
+
+        return $html;
     }
 }
