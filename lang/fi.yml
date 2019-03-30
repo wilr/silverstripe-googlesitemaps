@@ -1,0 +1,9 @@
+fi:
+  GoogleSitemaps:
+    METANOTEPRIORITY: 'Määritä Google Sitemaps -prioriteetti tälle sivulle (%s)'
+    METAPAGEPRIO: 'Sivun prioriteetti'
+    PRIORITYAUTOSET: 'Päättele automaattisesti valikkorakenteen mukaan'
+    PRIORITYLEASTIMPORTANT: 'Vähiten tärkein'
+    PRIORITYMOSTIMPORTANT: 'Kaikista tärkein'
+    PRIORITYNOTINDEXED: 'Pyydä olemaan näyttämättä hakukoneissa'
+    TABGOOGLESITEMAP: 'Google Sitemap'
