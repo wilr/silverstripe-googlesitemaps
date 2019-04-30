@@ -58,7 +58,9 @@ class GoogleSitemapExtension extends DataExtension
 
         if ($override !== null) {
             if (is_array($override)) {
-                $can = min($override, $can);
+                if (!empty($override)) {
+                    $can = min($override, $can);
+                }
             } else {
                 $can = $override;
             }
