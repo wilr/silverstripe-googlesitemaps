@@ -52,13 +52,18 @@ class GoogleSitemapExtension extends DataExtension
             return false;
         }
 
-        // Allow override. In this case, since this can return multiple results, we'll use an "and" based policy.
-        // That is if any value is false then the current value will be false. Only only if all are true will we
-        // then return true.
+        // Allow override. invokeWithExtensions will either return a single result (true|false) if defined on the object
+        // or an array if on extensions.
         $override = $this->owner->invokeWithExtensions('alterCanIncludeInGoogleSitemap', $can);
 
-        if ($override) {
-            $can = min($override, $can);
+        if ($override !== null) {
+            if (is_array($override)) {
+                if (!empty($override)) {
+                    $can = min($override, $can);
+                }
+            } else {
+                $can = $override;
+            }
         }
 
         return $can;

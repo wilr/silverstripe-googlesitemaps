@@ -60,6 +60,7 @@ class GoogleSitemapTest extends FunctionalTest
         $this->assertFalse($unused->canIncludeInGoogleSitemap());
 
         $used = $this->objFromFixture(TestDataObject::class, 'DataObjectTest2');
+
         $this->assertTrue($used->canIncludeInGoogleSitemap());
     }
 
