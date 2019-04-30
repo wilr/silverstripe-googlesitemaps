@@ -3,7 +3,6 @@
 [![Build Status](http://img.shields.io/travis/wilr/silverstripe-googlesitemaps.svg?style=flat-square)](http://travis-ci.org/wilr/silverstripe-googlesitemaps)
 [![Version](http://img.shields.io/packagist/v/wilr/silverstripe-googlesitemaps.svg?style=flat-square)](https://packagist.org/packages/wilr/silverstripe-googlesitemaps)
 [![License](http://img.shields.io/packagist/l/wilr/silverstripe-googlesitemaps.svg?style=flat-square)](LICENSE.md)
-![helpfulrobot](https://helpfulrobot.io/wilr/silverstripe-googlesitemaps/badge)
 
 ## Maintainer Contact
 
