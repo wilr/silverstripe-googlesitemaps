@@ -85,6 +85,16 @@ class GoogleSitemap
     private static $exclude_redirector_pages = true;
 
     /**
+     * @config
+     *
+     * @var array
+     */
+    private static $search_indexes = [
+        'google' => 'http://www.google.com/webmasters/sitemaps/ping?sitemap=',
+        'bing' => 'http://www.bing.com/ping?sitemap=',
+    ];
+
+    /**
      * Decorates the given DataObject with {@link GoogleSitemapDecorator}
      * and pushes the class name to the registered DataObjects.
      * Note that all registered DataObjects need the method AbsoluteLink().
@@ -443,27 +453,19 @@ class GoogleSitemap
     }
 
     /**
-     * Notifies Google about changes to your sitemap. This behavior is disabled
+     * Notifies search indexes about changes to your sitemap. This behavior is disabled
      * by default, to enable, read the documentation provided in the docs folder.
      *
      * After notifications have been enabled, every publish / unpublish of a page.
-     * will notify Google of the update.
+     * will notify enabled search indexes of the update.
      *
-     * If the site is in development mode no ping will be sent regardless whether
-     * the Google notification is enabled.
+     * If the site is in development mode no ping will be sent.
      *
      * @return boolean
      */
     public static function ping()
     {
-        if (!self::enabled()) {
-            return false;
-        }
-
-        // Don't ping if the site has disabled it, or if the site is in dev mode
-        $active = Config::inst()->get(__CLASS__, 'google_notification_enabled');
-
-        if (!$active || Director::isDev()) {
+        if (!self::enabled() || Director::isDev()) {
             return false;
         }
 
@@ -472,43 +474,15 @@ class GoogleSitemap
             'sitemap.xml'
         ));
 
-        $googleResponse = self::send_ping(
-            "www.google.com",
-            "/webmasters/sitemaps/ping",
-            sprintf("sitemap=%s", $location)
-        );
+        $response = true;
 
-        // bing
-        $bing = Config::inst()->get(__CLASS__, 'bing_notification_enabled');
+        foreach (self::config()->search_indexes as $name => $url) {
+            $configName = $name . '_notification_enabled';
 
-        if ($bing) {
-            $bingResponse = self::send_ping(
-                "www.bing.com",
-                "/ping",
-                sprintf("sitemap=%s", $location)
-            );
+            if (self::config()->$configName) {
+                $response = $response && file_get_contents($url . $location);
+            }
         }
-
-        return true;
-    }
-
-    /**
-     * Send an HTTP request to the host.
-     *
-     * @return String Response text
-     */
-    protected static function send_ping($host, $path, $query)
-    {
-        $socket = fsockopen($host, 80, $errno, $error);
-        if (!$socket) {
-            return $error;
-        }
-        if ($query) {
-            $query = '?' . $query;
-        }
-        $request = "GET {$path}{$query} HTTP/1.1\r\nHost: $host\r\nConnection: Close\r\n\r\n";
-        fwrite($socket, $request);
-        $response = stream_get_contents($socket);
 
         return $response;
     }
