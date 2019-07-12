@@ -42,29 +42,30 @@
                       <xsl:value-of select="sitemap:loc"/>
                     </a>
 
-
-                    <xsl:if test="\$imagesCount &gt; 0">
-                      <table class="imagestable" cellpadding="0" cellspacing="0">
-                        <tr>
-                          <th>Images</th>
-                        </tr>
-                        <xsl:for-each select="image:image">
-                          <xsl:variable name="imageURL">
-                            <xsl:value-of select="image:loc"/>
-                          </xsl:variable>
-                          <tr>
-                            <td>
-                              <img src="{\$imageURL}" width="40px"/>
-                            </td>
-                            <td>
-                              <a href="{\$imageURL}">
+                    <% if $imagesCount %>
+                        <xsl:if test="\$imagesCount &gt; 0">
+                          <table class="imagestable" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <th>Images</th>
+                            </tr>
+                            <xsl:for-each select="image:image">
+                              <xsl:variable name="imageURL">
                                 <xsl:value-of select="image:loc"/>
-                              </a>
-                            </td>
-                          </tr>
-                        </xsl:for-each>
-                      </table>
-                    </xsl:if>
+                              </xsl:variable>
+                              <tr>
+                                <td>
+                                  <img src="{\$imageURL}" width="40px"/>
+                                </td>
+                                <td>
+                                  <a href="{\$imageURL}">
+                                    <xsl:value-of select="image:loc"/>
+                                  </a>
+                                </td>
+                              </tr>
+                            </xsl:for-each>
+                          </table>
+                        </xsl:if>
+                    <% end_if %>
 
 
                   </td>

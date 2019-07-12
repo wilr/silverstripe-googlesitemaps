@@ -160,7 +160,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             }
         }
 
-        $this->owner->extend('updateImagesForSitemap', $list);
+        $list = $this->owner->extend('updateImagesForSitemap', $list);
 
         return $list;
     }
