@@ -103,7 +103,7 @@ class GoogleSitemapExtension extends DataExtension
             return ($priority < 0) ? false : $priority;
         }
 
-        return GoogleSitemap::get_priority_for_class($this->owner->class);
+        return GoogleSitemap::get_priority_for_class($this->owner->ClassName);
     }
 
     /**
@@ -117,7 +117,7 @@ class GoogleSitemapExtension extends DataExtension
      */
     public function getChangeFrequency()
     {
-        if ($freq = GoogleSitemap::get_frequency_for_class($this->owner->class)) {
+        if ($freq = GoogleSitemap::get_frequency_for_class($this->owner->ClassName)) {
             return $freq;
         }
 
