@@ -1,0 +1,9 @@
+sl:
+  GoogleSitemaps:
+    METANOTEPRIORITY: 'Ročno nastavite (Google Sitemaps priority) pomembnost trenutne strani (%s)'
+    METAPAGEPRIO: 'Pomembnost strani'
+    PRIORITYAUTOSET: 'Samodejno glede na nivo v strukturi'
+    PRIORITYLEASTIMPORTANT: 'Manj pomembna'
+    PRIORITYMOSTIMPORTANT: 'Bolj pomembna'
+    PRIORITYNOTINDEXED: 'Ne indeksiraj'
+    TABGOOGLESITEMAP: 'Google Sitemap'
