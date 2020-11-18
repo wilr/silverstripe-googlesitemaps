@@ -116,7 +116,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
 
         if (!$priority) {
             $parentStack = $this->owner->getAncestors();
-            $numParents = is_array($parentStack) ? count($parentStack) - 1 : 0;
+            $numParents = $parentStack->count();
 
             $num = max(0.1, 1.0 - ($numParents / 10));
             $result = str_replace(",", ".", $num);
