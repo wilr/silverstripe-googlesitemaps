@@ -159,6 +159,32 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
                 }
             }
         }
+        
+        foreach ($this->owner->manyMany() as $field => $type) {
+            $image = false;
+
+            if (is_array($type) && isset($type['through'])) {
+                if (singleton($type['through']) instanceof Image) {
+                    $image = true;
+                }
+            } else {
+                if (singleton($type) instanceof Image) {
+                    $image = true;
+                }
+            }
+
+            if ($image) {
+                $images = $this->owner->$field();
+
+                foreach ($images as $image) {
+                    if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                        $cachedImages[$image->ID] = true;
+
+                        $list->push($image);
+                    }
+                }
+            }
+        }
 
         $this->owner->extend('updateImagesForSitemap', $list);
 
