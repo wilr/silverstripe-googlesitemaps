@@ -162,7 +162,11 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         
         foreach ($this->owner->manyMany() as $field => $type) {
             $image = false;
-
+    
+            if (strpos($type, '.') !== false) {
+                $type = explode('.', $type)[0];
+            }
+            
             if (is_array($type) && isset($type['through'])) {
                 if (singleton($type['through']) instanceof Image) {
                     $image = true;
