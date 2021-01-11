@@ -57,6 +57,7 @@
                               <img src="{\$imageURL}" width="40px"/>
                             </td>
                             <td>
+                              <xsl:value-of select="image:title"/><br/>
                               <a href="{\$imageURL}">
                                 <xsl:value-of select="image:loc"/>
                               </a>

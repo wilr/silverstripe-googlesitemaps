@@ -10,6 +10,7 @@
             <% if $ImagesForSitemap %><% loop $ImagesForSitemap %>
                 <image:image>
                     <image:loc>{$AbsoluteLink}</image:loc>
+                    <image:title>{$Title}</image:title>
                 </image:image>
             <% end_loop %><% end_if %>
         </url>
