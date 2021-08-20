@@ -103,6 +103,10 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         $result = parent::canIncludeInGoogleSitemap();
         $result = ($this->owner instanceof ErrorPage) ? false : $result;
 
+        if (is_array($result) && isset($result[0])) {
+            return $result[0];
+        }
+
         return $result;
     }
 

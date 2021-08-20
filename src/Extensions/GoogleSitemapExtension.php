@@ -66,6 +66,10 @@ class GoogleSitemapExtension extends DataExtension
             }
         }
 
+        if (is_array($can) && isset($can[0])) {
+            return $can[0];
+        }
+
         return $can;
     }
 
