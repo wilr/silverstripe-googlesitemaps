@@ -135,6 +135,10 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         $cachedImages = [];
 
         foreach ($this->owner->hasOne() as $field => $type) {
+            if (strpos($type, '.') !== false) {
+                $type = explode('.', $type)[0];
+            }
+
             if (singleton($type) instanceof Image) {
                 $image = $this->owner->getComponent($field);
 
