@@ -8,6 +8,7 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\ORM\ArrayList;
+use Throwable;
 
 class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
 {
@@ -142,10 +143,14 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             if (singleton($type) instanceof Image) {
                 $image = $this->owner->getComponent($field);
 
-                if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
-                    $cachedImages[$image->ID] = true;
+                try {
+                    if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                        $cachedImages[$image->ID] = true;
 
-                    $list->push($image);
+                        $list->push($image);
+                    }
+                } catch (Throwable $e) {
+                    //
                 }
             }
         }
@@ -155,18 +160,22 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
                 $images = $this->owner->getComponents($field);
 
                 foreach ($images as $image) {
-                    if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
-                        $cachedImages[$image->ID] = true;
+                    try {
+                        if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                            $cachedImages[$image->ID] = true;
 
-                        $list->push($image);
+                            $list->push($image);
+                        }
+                    } catch (Throwable $e) {
+                        //
                     }
                 }
             }
         }
-        
+
         foreach ($this->owner->manyMany() as $field => $type) {
             $image = false;
-    
+
             if (is_array($type) && isset($type['through'])) {
                 if (singleton($type['through']) instanceof Image) {
                     $image = true;
@@ -175,7 +184,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
                 if (strpos($type, '.') !== false) {
                     $type = explode('.', $type)[0];
                 }
-            
+
                 if (singleton($type) instanceof Image) {
                     $image = true;
                 }
@@ -185,10 +194,14 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
                 $images = $this->owner->$field();
 
                 foreach ($images as $image) {
-                    if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
-                        $cachedImages[$image->ID] = true;
+                    try {
+                        if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                            $cachedImages[$image->ID] = true;
 
-                        $list->push($image);
+                            $list->push($image);
+                        }
+                    } catch (Throwable $e) {
+                        //
                     }
                 }
             }
