@@ -68,11 +68,11 @@ class GoogleSitemapController extends Controller
     public function sitemap()
     {
         $class = $this->unsanitiseClassName($this->request->param('ID'));
-        $page = $this->request->param('OtherID');
+        $page = intval($this->request->param('OtherID'));
 
         if (GoogleSitemap::enabled()
             && $class
-            && $page
+            && ($page > 0)
             && ($class == SiteTree::class || $class == 'GoogleSitemapRoute' || GoogleSitemap::is_registered($class))
         ) {
             $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
