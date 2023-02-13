@@ -390,7 +390,7 @@ class GoogleSitemap
             for ($i = 1; $i <= $neededForPage; $i++) {
                 $lastEdited = $instances
                     ->limit($countPerFile, ($i - 1) * $countPerFile)
-                    ->sort(array())
+                    ->sort(null)
                     ->max('LastEdited');
 
                 $lastModified = ($lastEdited) ? date('Y-m-d', strtotime($lastEdited)) : date('Y-m-d');
@@ -515,6 +515,6 @@ class GoogleSitemap
      */
     protected function sanitiseClassName($class)
     {
-        return str_replace('\\', '-', $class);
+        return str_replace('\\', '-', (string) $class);
     }
 }

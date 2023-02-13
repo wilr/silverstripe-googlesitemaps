@@ -1,25 +1,32 @@
 {
-	"name": "wilr/silverstripe-googlesitemaps",
-	"description": "SilverStripe support for the Google Sitemaps XML, enabling Google and other search engines to see all urls on your site. This helps your SilverStripe website rank well in search engines, and to encourage the information on your site to be discovered quickly.",
-	"type": "silverstripe-vendormodule",
-	"keywords": ["silverstripe", "googlesitemaps", "seo"],
-	"homepage": "https://github.com/wilr/silverstripe-googlesitemaps",
-	"license": "BSD-3-Clause",
-	"authors": [{
-		"name": "Will Rossiter",
-		"email": "will@fullscreen.io"
-	}],
-	"require": {
-		"silverstripe/framework": "^4"
-	},
+    "name": "wilr/silverstripe-googlesitemaps",
+    "description": "SilverStripe support for the Google Sitemaps XML, enabling Google and other search engines to see all urls on your site. This helps your SilverStripe website rank well in search engines, and to encourage the information on your site to be discovered quickly.",
+    "type": "silverstripe-vendormodule",
+    "keywords": [
+        "silverstripe",
+        "googlesitemaps",
+        "seo"
+    ],
+    "homepage": "https://github.com/wilr/silverstripe-googlesitemaps",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Will Rossiter",
+            "email": "will@fullscreen.io"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "silverstripe/framework": "^5"
+    },
     "require-dev": {
-        "phpunit/phpunit": "^5.7",
+        "phpunit/phpunit": "^9.5",
         "squizlabs/php_codesniffer": "^3"
     },
     "replace": {
-        "silverstripe/googlesitemaps":"*"
+        "silverstripe/googlesitemaps": "*"
     },
-	"extra": {
+    "extra": {
         "branch-alias": {
             "dev-main": "2.x-dev"
         },
@@ -35,5 +42,12 @@
         }
     },
     "prefer-stable": true,
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "silverstripe/vendor-plugin": true,
+            "silverstripe/recipe-plugin": true
+        }
+    }
 }

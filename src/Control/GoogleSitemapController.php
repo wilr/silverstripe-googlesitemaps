@@ -95,7 +95,7 @@ class GoogleSitemapController extends Controller
      */
     protected function unsanitiseClassName($class)
     {
-        return str_replace('-', '\\', $class);
+        return str_replace('-', '\\', (string) $class);
     }
 
     /**
