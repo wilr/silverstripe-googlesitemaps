@@ -70,6 +70,12 @@ class GoogleSitemapController extends Controller
         $class = $this->unsanitiseClassName($this->request->param('ID'));
         $page = intval($this->request->param('OtherID'));
 
+        if ($page) {
+            if (!is_numeric($page)) {
+                return new HTTPResponse('Page not found', 404);
+            }
+        }
+
         if (GoogleSitemap::enabled()
             && $class
             && ($page > 0)
