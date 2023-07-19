@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type='text/xsl' href='http://localhostsitemap.xml/styleSheetIndex'?>
+<?xml-stylesheet type='text/xsl' href='http://localhost/sitemap.xml/styleSheetIndex'?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <sitemap>
-        <loc>http://localhostsitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1</loc>
+        <loc>http://localhost/sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1</loc>
         <lastmod>2023-02-13</lastmod>
     </sitemap>
     <sitemap>
-        <loc>http://localhostsitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-OtherDataObject/1</loc>
+        <loc>http://localhost/sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-OtherDataObject/1</loc>
         <lastmod>2023-02-13</lastmod>
     </sitemap>
 </sitemapindex>

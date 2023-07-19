@@ -12,6 +12,10 @@
 
 > composer require "wilr/silverstripe-googlesitemaps"
 
+If you're using Silverstripe 5 then version 3 or `dev-main` will work.
+
+For Silverstripe 4 use the `2.x` branch line.
+
 ## Documentation
 
 Provides support for the [Sitemaps XML Protocol](http://www.sitemaps.org/protocol.html),

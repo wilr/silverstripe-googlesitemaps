@@ -4,9 +4,8 @@ namespace Wilr\GoogleSitemaps\Control;
 
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
-use SilverStripe\Core\Config\Config;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
-use SilverStripe\Core\Manifest\ModuleResourceLoader;
 use Wilr\GoogleSitemaps\GoogleSitemap;
 use SilverStripe\View\ArrayData;
 
@@ -52,7 +51,7 @@ class GoogleSitemapController extends Controller
             $this->extend('updateGoogleSitemaps', $sitemaps);
 
             return $this->customise(new ArrayData([
-                'Sitemaps' => $sitemaps
+                'Sitemaps' => $sitemaps,
             ]))->renderWith(__CLASS__);
         } else {
             return new HTTPResponse('Page not found', 404);
@@ -76,7 +75,8 @@ class GoogleSitemapController extends Controller
             }
         }
 
-        if (GoogleSitemap::enabled()
+        if (
+            GoogleSitemap::enabled()
             && $class
             && ($page > 0)
             && ($class == SiteTree::class || $class == 'GoogleSitemapRoute' || GoogleSitemap::is_registered($class))
@@ -128,5 +128,11 @@ class GoogleSitemapController extends Controller
         $this->getResponse()->addHeader('Content-Type', 'text/xsl; charset="utf-8"');
 
         return $html;
+    }
+
+
+    public function AbsoluteLink($action = null)
+    {
+        return Controller::join_links(Director::absoluteBaseURL(), 'sitemap.xml', $action);
     }
 }

@@ -4,7 +4,6 @@ namespace Wilr\GoogleSitemaps\Tests;
 
 use Exception;
 use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\DropdownField;
@@ -24,6 +23,8 @@ class GoogleSitemapTest extends FunctionalTest
         'GoogleSitemapTest.yml',
         'GoogleSitemapPageTest.yml',
     ];
+
+    protected $usesDatabase = true;
 
     protected static $extra_dataobjects = [
         TestDataObject::class,
@@ -131,8 +132,8 @@ class GoogleSitemapTest extends FunctionalTest
         $page2->publishSingle();
         $page2->flushCache();
 
-        DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-03-14 00:00:00' WHERE \"ID\"='".$page->ID."'");
-        DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-01-01 00:00:00' WHERE \"ID\"='".$page2->ID."'");
+        DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-03-14 00:00:00' WHERE \"ID\"='" . $page->ID . "'");
+        DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-01-01 00:00:00' WHERE \"ID\"='" . $page2->ID . "'");
 
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
@@ -309,7 +310,7 @@ class GoogleSitemapTest extends FunctionalTest
             Versioned::set_reading_mode($oldMode);
             throw $ex;
         } // finally {
-            Versioned::set_reading_mode($oldMode);
+        Versioned::set_reading_mode($oldMode);
         // }
     }
 }
