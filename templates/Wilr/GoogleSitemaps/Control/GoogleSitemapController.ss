@@ -2,7 +2,7 @@
 <?xml-stylesheet type='text/xsl' href='{$AbsoluteLink('styleSheetIndex')}'?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><% loop Sitemaps %>
     <sitemap>
-        <loc>{$AbsoluteLink('sitemap')}/{$ClassName}/{$Page.xml}</loc>
+        <loc>{$Up.AbsoluteLink('sitemap')}/{$ClassName}/{$Page.xml}</loc>
         <% if $LastModified %><lastmod>{$LastModified}</lastmod><% end_if %>
     </sitemap><% end_loop %>
 </sitemapindex>
