@@ -133,6 +133,6 @@ class GoogleSitemapController extends Controller
 
     public function AbsoluteLink($action = null)
     {
-        return Controller::join_links(Director::absoluteBaseURL(), 'sitemap.xml', $action);
+        return rtrim(Controller::join_links(Director::absoluteBaseURL(), 'sitemap.xml', $action), '/');
     }
 }
