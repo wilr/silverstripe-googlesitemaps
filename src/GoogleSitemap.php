@@ -236,7 +236,8 @@ class GoogleSitemap
      */
     public function getItems($class, $page = 1)
     {
-        //normalise the class name
+        $page = (int) $page;
+
         try {
             $reflectionClass = new ReflectionClass($class);
             $class = $reflectionClass->getName();
@@ -246,9 +247,9 @@ class GoogleSitemap
         }
 
         $output = new ArrayList();
-        $count = Config::inst()->get(__CLASS__, 'objects_per_sitemap');
-        $filter =  Config::inst()->get(__CLASS__, 'use_show_in_search');
-        $redirector =  Config::inst()->get(__CLASS__, 'exclude_redirector_pages');
+        $count = (int) Config::inst()->get(__CLASS__, 'objects_per_sitemap');
+        $filter = Config::inst()->get(__CLASS__, 'use_show_in_search');
+        $redirector = Config::inst()->get(__CLASS__, 'exclude_redirector_pages');
 
         // todo migrate to extension hook or DI point for other modules to
         // modify state filters
@@ -416,7 +417,7 @@ class GoogleSitemap
                         ->limit($countPerFile, ($i - 1) * $countPerFile)
                         ->last();
 
-                    $lastModified = ($sliced) ? date('Y-m-d', strtotime($sliced->LastEdited)): date('Y-m-d');
+                    $lastModified = ($sliced) ? date('Y-m-d', strtotime($sliced->LastEdited)) : date('Y-m-d');
 
                     $sitemaps->push(new ArrayData(array(
                         'ClassName' => $this->sanitiseClassName($class),
