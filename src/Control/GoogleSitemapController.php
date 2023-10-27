@@ -75,8 +75,7 @@ class GoogleSitemapController extends Controller
             }
         }
 
-        if (
-            GoogleSitemap::enabled()
+        if (GoogleSitemap::enabled()
             && $class
             && ($page > 0)
             && ($class == SiteTree::class || $class == 'GoogleSitemapRoute' || GoogleSitemap::is_registered($class))

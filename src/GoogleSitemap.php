@@ -90,8 +90,7 @@ class GoogleSitemap
      * @var array
      */
     private static $search_indexes = [
-        'google' => 'http://www.google.com/webmasters/sitemaps/ping?sitemap=',
-        'bing' => 'http://www.bing.com/ping?sitemap=',
+        'google' => 'http://www.google.com/webmasters/sitemaps/ping?sitemap='
     ];
 
     /**

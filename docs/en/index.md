@@ -30,42 +30,32 @@ manually, including requesting to have the page excluded from the sitemap.
 Most module configuration is done via the SilverStripe Config API. Create a new
 config file `mysite/_config/googlesitemaps.yml` with the following outline:
 
-	---
-	Name: customgooglesitemaps
-	After: googlesitemaps
-	---
-	Wilr\GoogleSitemaps\GoogleSitemap:
-  		enabled: true
-  		objects_per_sitemap: 1000
-  		google_notification_enabled: false
-  		use_show_in_search: true
+    ---
+    Name: customgooglesitemaps
+    After: googlesitemaps
+    ---
+    Wilr\GoogleSitemaps\GoogleSitemap:
+
+enabled: true
+objects_per_sitemap: 1000
+google_notification_enabled: false
+use_show_in_search: true
 
 You can now alter any of those properties to set your needs. A popular option
 is to turn on automatic pinging so that Google is notified of any updates to
 your page. You can set this in the file we created in the last paragraph by
 editing the `google_notification_enabled` option to true
 
-	---
-	Name: customgooglesitemaps
-	After: googlesitemaps
-	---
-	Wilr\GoogleSitemaps\GoogleSitemap:
-  		enabled: true
-  		objects_per_sitemap: 1000
-  		google_notification_enabled: true
-  		use_show_in_search: true
-
-### Bing Ping Support
-
-To ping Bing whenever your sitemap is updated, set `bing_notification_enabled`
-
     ---
     Name: customgooglesitemaps
     After: googlesitemaps
     ---
     Wilr\GoogleSitemaps\GoogleSitemap:
-        enabled: true
-        bing_notification_enabled: true
+
+enabled: true
+objects_per_sitemap: 1000
+google_notification_enabled: true
+use_show_in_search: true
 
 ### Including DataObjects
 
@@ -76,41 +66,40 @@ database as DataObject subclasses.
 To include a DataObject instance in the Sitemap it requires that your subclass
 defines two functions:
 
- * AbsoluteLink() function which returns the URL for this DataObject
- * canView() function which returns a boolean value.
+-   AbsoluteLink() function which returns the URL for this DataObject
+-   canView() function which returns a boolean value.
 
 The following is a barebones example of a DataObject called 'MyDataObject'. It
 assumes that you have a controller called 'MyController' which has a show method
 to show the DataObject by its ID.
 
-	<?php
+    <?php
 
     use SilverStripe\ORM\DataObject;
     use SilverStripe\Control\Director;
 
-	class MyDataObject extends DataObject {
+    class MyDataObject extends DataObject {
 
-		function canView($member = null) {
-			return true;
-		}
+    	function canView($member = null) {
+    		return true;
+    	}
 
-		function AbsoluteLink() {
-			return Director::absoluteURL($this->Link());
-		}
+    	function AbsoluteLink() {
+    		return Director::absoluteURL($this->Link());
+    	}
 
-		function Link() {
-			return 'MyController/show/'. $this->ID;
-		}
-	}
-
+    	function Link() {
+    		return 'MyController/show/'. $this->ID;
+    	}
+    }
 
 After those methods have been defined on your DataObject you now need to tell
 the Google Sitemaps module that it should be listed in the sitemap.xml file. To
-do that, include the following in your _config.php file.
+do that, include the following in your \_config.php file.
 
     use Wilr\GoogleSitemaps\GoogleSitemap;
 
-	GoogleSitemap::register_dataobject('MyDataObject');
+    GoogleSitemap::register_dataobject('MyDataObject');
 
 If you need to change the frequency of the indexing, you can pass the change
 frequency (daily, weekly, monthly) as a second parameter to register_dataobject(), So
@@ -118,7 +107,7 @@ instead of the previous code you would write:
 
     use Wilr\GoogleSitemaps\GoogleSitemap;
 
-	GoogleSitemap::register_dataobject('MyDataObject', 'daily');
+    GoogleSitemap::register_dataobject('MyDataObject', 'daily');
 
 See the following blog post for more information:
 
@@ -133,8 +122,26 @@ urls to include.
 
     use Wilr\GoogleSitemaps\GoogleSitemap;
 
-	GoogleSitemap::register_routes(array(
-		'/my-custom-controller/',
-		'/Security/',
-		'/Security/login/'
-	));
+    GoogleSitemap::register_routes(array(
+    	'/my-custom-controller/',
+    	'/Security/',
+    	'/Security/login/'
+    ));
+
+### Sitemapable
+
+For automatic registration of a DataObject subclass, implement the `Sitemapable`
+extension
+
+```
+<?php
+
+
+class MyDataObject extends DataObject implements Sitemapable
+{
+    public function AbsoluteLink()
+    {
+        // ..
+    }
+}
+```

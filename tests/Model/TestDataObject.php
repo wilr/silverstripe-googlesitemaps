@@ -8,6 +8,7 @@ use SilverStripe\Control\Director;
 
 class TestDataObject extends DataObject implements TestOnly
 {
+    protected $private = false;
 
     private static $db = array(
         'Priority' => 'Varchar(10)'
@@ -15,7 +16,17 @@ class TestDataObject extends DataObject implements TestOnly
 
     public function canView($member = null)
     {
+        if ($this->private) {
+            return false;
+        }
+
         return true;
+    }
+
+
+    public function setPrivate()
+    {
+        $this->private = true;
     }
 
     public function AbsoluteLink()

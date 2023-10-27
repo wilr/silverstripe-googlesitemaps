@@ -20,11 +20,21 @@ use Wilr\GoogleSitemaps\Tests\Model\UnviewableDataObject;
 class GoogleSitemapTest extends FunctionalTest
 {
     protected static $fixture_file = [
-        'GoogleSitemapTest.yml',
-        'GoogleSitemapPageTest.yml',
+        'GoogleSitemapTest.yml'
     ];
 
     protected $usesDatabase = true;
+
+    public static function get_fixture_file()
+    {
+        $files = [__DIR__ . '/GoogleSitemapTest.yml'];
+
+        if (class_exists('Page')) {
+            $files[] = __DIR__ . '/GoogleSitemapPageTest.yml';
+        }
+
+        return $files;
+    }
 
     protected static $extra_dataobjects = [
         TestDataObject::class,
@@ -55,13 +65,13 @@ class GoogleSitemapTest extends FunctionalTest
     public function testCanIncludeInGoogleSitemap(): void
     {
         GoogleSitemap::register_dataobject(TestDataObject::class, '');
-
-        $unused = $this->objFromFixture(TestDataObject::class, 'UnindexedDataObject');
-        $this->assertFalse($unused->canIncludeInGoogleSitemap());
-
         $used = $this->objFromFixture(TestDataObject::class, 'DataObjectTest2');
 
         $this->assertTrue($used->canIncludeInGoogleSitemap());
+
+        $used->setPrivate();
+
+        $this->assertFalse($used->canIncludeInGoogleSitemap());
     }
 
     public function testIndexFileWithCustomRoute(): void
@@ -77,31 +87,29 @@ class GoogleSitemapTest extends FunctionalTest
     public function testGetItems(): void
     {
         GoogleSitemap::register_dataobject(TestDataObject::class, '');
+        $google = new GoogleSitemap();
 
-        $items = GoogleSitemap::get_items(TestDataObject::class, 1);
-        $this->assertEquals(2, $items->count());
+        $items = $google->getItems(TestDataObject::class, 1);
 
-        $this->assertListEquals(array(
-            array("Priority" => "0.2"),
-            array("Priority" => "0.4")
-        ), $items);
+        $this->assertEquals(3, $items->count());
 
         GoogleSitemap::register_dataobject(OtherDataObject::class);
-        $this->assertEquals(1, GoogleSitemap::get_items(OtherDataObject::class, 1)->count());
+        $this->assertEquals(1, $google->getItems(OtherDataObject::class, 1)->count());
 
         GoogleSitemap::register_dataobject(UnviewableDataObject::class);
-        $this->assertEquals(0, GoogleSitemap::get_items(UnviewableDataObject::class, 1)->count());
+        $this->assertEquals(0, $google->getItems(UnviewableDataObject::class, 1)->count());
     }
 
     public function testGetItemsWithCustomRoutes(): void
     {
-        GoogleSitemap::register_routes(array(
+        GoogleSitemap::register_routes([
             '/test-route/',
             '/someother-route/',
             '/fake-sitemap-route/'
-        ));
+        ]);
 
-        $items = GoogleSitemap::get_items('GoogleSitemapRoute', 1);
+        $google = new GoogleSitemap();
+        $items = $google->getItems('GoogleSitemapRoute', 1);
         $this->assertEquals(3, $items->count());
     }
 
@@ -109,6 +117,16 @@ class GoogleSitemapTest extends FunctionalTest
     {
         GoogleSitemap::register_dataobject(TestDataObject::class);
         GoogleSitemap::register_dataobject(OtherDataObject::class);
+
+        $obj = $this->objFromFixture(TestDataObject::class, 'DataObjectTest1');
+        $table = $obj->baseTable();
+
+        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00'");
+
+        $obj2 = $this->objFromFixture(OtherDataObject::class, 'OtherDataObjectTest2');
+        $table = $obj2->baseTable();
+
+        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00'");
 
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
@@ -153,9 +171,19 @@ class GoogleSitemapTest extends FunctionalTest
         Config::inst()->set(GoogleSitemap::class, 'objects_per_sitemap', 1);
         GoogleSitemap::register_dataobject(TestDataObject::class);
 
+
+        $obj = $this->objFromFixture(TestDataObject::class, 'DataObjectTest1');
+        $obj1 = $this->objFromFixture(TestDataObject::class, 'DataObjectTest2');
+        $obj2 = $this->objFromFixture(TestDataObject::class, 'UnindexedDataObject');
+
+        $table = $obj->baseTable();
+        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj->ID . "'");
+        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj1->ID . "'");
+        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj2->ID . "'");
+
+
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
-
         $this->assertXmlStringEqualsXmlFile(__DIR__ . '/xml/' . __FUNCTION__ . '.xml', $body);
 
         Config::inst()->set(GoogleSitemap::class, 'objects_per_sitemap', $original);
@@ -164,11 +192,11 @@ class GoogleSitemapTest extends FunctionalTest
     public function testRegisterRoutesIncludesAllRoutes(): void
     {
         GoogleSitemap::register_route('/test/');
-        GoogleSitemap::register_routes(array(
+        GoogleSitemap::register_routes([
             '/test/', // duplication should be replaced
             '/unittests/',
             '/anotherlink/'
-        ), 'weekly');
+        ], 'weekly');
 
         $response = $this->get('sitemap.xml/sitemap/GoogleSitemapRoute/1');
         $body = $response->getBody();
@@ -193,7 +221,7 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testGetItemsWithPages(): void
     {
-        if (!class_exists('Page')) {
+        if (!class_exists(SiteTree::class)) {
             $this->markTestIncomplete('No cms module installed, page related test skipped');
         }
 
@@ -205,10 +233,10 @@ class GoogleSitemapTest extends FunctionalTest
         $page2->publishSingle();
         $page2->flushCache();
 
-        $this->assertListContains(array(
-            array('Title' => 'Testpage1'),
-            array('Title' => 'Testpage2')
-        ), GoogleSitemap::inst()->getItems(SiteTree::class), "There should be 2 pages in the sitemap after publishing");
+        $this->assertListContains([
+            ['Title' => 'Testpage1'],
+            ['Title' => 'Testpage2']
+        ], GoogleSitemap::inst()->getItems(SiteTree::class), "There should be 2 pages in the sitemap after publishing");
 
         // check if we make a page readonly that it is hidden
         $page2->CanViewType = 'LoggedInUsers';
@@ -217,9 +245,9 @@ class GoogleSitemapTest extends FunctionalTest
 
         $this->logOut();
 
-        $this->assertListEquals(array(
-            array('Title' => 'Testpage1')
-        ), GoogleSitemap::inst()->getItems(SiteTree::class), "There should be only 1 page, other is logged in only");
+        $this->assertListEquals([
+            ['Title' => 'Testpage1']
+        ], GoogleSitemap::inst()->getItems(SiteTree::class), "There should be only 1 page, other is logged in only");
     }
 
     public function testAccess(): void

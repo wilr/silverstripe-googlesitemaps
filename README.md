@@ -6,13 +6,13 @@
 
 ## Maintainer Contact
 
-* Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
+-   Will Rossiter (Nickname: wrossiter, willr) <will@fullscreen.io>
 
 ## Installation
 
 > composer require "wilr/silverstripe-googlesitemaps"
 
-If you're using Silverstripe 5 then version 3 or `dev-main` will work.
+If you're using Silverstripe 5 then version `3` or `dev-main` will work.
 
 For Silverstripe 4 use the `2.x` branch line.
 
@@ -34,4 +34,4 @@ See docs/en for more information about configuring the module.
 
 ## Troubleshooting
 
-* Flush this route to ensure the changes take effect (e.g http://yoursite.com/sitemap.xml?flush=1)
+-   Flush this route to ensure the changes take effect (e.g http://yoursite.com/sitemap.xml?flush=1)
