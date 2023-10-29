@@ -81,7 +81,11 @@ class GoogleSitemapTest extends FunctionalTest
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
 
-        $this->assertXmlStringEqualsXmlFile(__DIR__ . '/xml/' . __FUNCTION__ . '.xml', $body, 'A link to the custom routes exists');
+        $this->assertXmlStringEqualsXmlFile(
+            __DIR__ . '/xml/' . __FUNCTION__ . '.xml',
+            $body,
+            'A link to the custom routes exists'
+        );
     }
 
     public function testGetItems(): void
@@ -146,12 +150,12 @@ class GoogleSitemapTest extends FunctionalTest
         $page->publishSingle();
         $page->flushCache();
 
-        $page2 = $this->objFromFixture('Page', 'Page2');
-        $page2->publishSingle();
-        $page2->flushCache();
+        $p2 = $this->objFromFixture('Page', 'Page2');
+        $p2->publishSingle();
+        $p2->flushCache();
 
         DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-03-14 00:00:00' WHERE \"ID\"='" . $page->ID . "'");
-        DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-01-01 00:00:00' WHERE \"ID\"='" . $page2->ID . "'");
+        DB::query("UPDATE \"SiteTree_Live\" SET \"LastEdited\"='2014-01-01 00:00:00' WHERE \"ID\"='" . $p2->ID . "'");
 
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
@@ -176,10 +180,10 @@ class GoogleSitemapTest extends FunctionalTest
         $obj1 = $this->objFromFixture(TestDataObject::class, 'DataObjectTest2');
         $obj2 = $this->objFromFixture(TestDataObject::class, 'UnindexedDataObject');
 
-        $table = $obj->baseTable();
-        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj->ID . "'");
-        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj1->ID . "'");
-        DB::query("UPDATE \"" . $table . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj2->ID . "'");
+        $t = $obj->baseTable();
+        DB::query("UPDATE \"" . $t . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj->ID . "'");
+        DB::query("UPDATE \"" . $t . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj1->ID . "'");
+        DB::query("UPDATE \"" . $t . "\" SET \"LastEdited\"='2023-02-13 00:00:00' WHERE \"ID\"='" . $obj2->ID . "'");
 
 
         $response = $this->get('sitemap.xml');
