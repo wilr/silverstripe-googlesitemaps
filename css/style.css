@@ -134,6 +134,12 @@ a {
     width: calc(100% - 6rem);
 }
 
+.image-table__image {
+    height: 4rem;
+    object-fit: cover;
+    width: 6rem;
+}
+
 .image-table__title {
     display: block;
 }

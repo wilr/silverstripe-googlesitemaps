@@ -50,10 +50,10 @@
                             </xsl:variable>
                             <tr>
                               <td class="image-table__cell image-table__cell--image">
-                                <img src="{\$imageURL}" width="60px"/>
+                                <img class="image-table__image" src="{\$imageURL}" width="60" height="40" />
                               </td>
                               <td class="image-table__cell image-table__cell--text">
-                                <xsl:value-of select="image:title"/><br/>
+                                <span class="image-table__title"><xsl:value-of select="image:title"/></span>
                                 <a href="{\$imageURL}">
                                   <xsl:value-of select="image:loc"/>
                                 </a>
