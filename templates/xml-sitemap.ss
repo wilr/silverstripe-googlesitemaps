@@ -40,7 +40,7 @@
                         <xsl:value-of select="sitemap:loc"/>
                       </a>
                       <xsl:if test="\$imagesCount &gt; 0">
-                        <table class="image-table" cellpadding="0" cellspacing="0">
+                        <table class="image-table">
                           <tr>
                             <th class="image-table__cell">Images</th>
                           </tr>
@@ -50,7 +50,7 @@
                             </xsl:variable>
                             <tr>
                               <td class="image-table__cell image-table__cell--image">
-                                <img src="{\$imageURL}" width="40px"/>
+                                <img src="{\$imageURL}" width="60px"/>
                               </td>
                               <td class="image-table__cell image-table__cell--text">
                                 <xsl:value-of select="image:title"/><br/>
