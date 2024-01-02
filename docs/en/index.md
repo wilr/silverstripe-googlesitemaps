@@ -1,23 +1,23 @@
 # Google Sitemaps Module
 
-SilverStripe provides support for the Google Sitemaps XML system, enabling
+Silverstripe CMS provides support for the Google Sitemaps XML system, enabling
 Google and other search engines to see all pages on your site. This helps
-your SilverStripe website rank well in search engines, and to encourage the
+your Silverstripe CMS website rank well in search engines, and to encourage the
 information on your site to be discovered by Google quickly.
 
-Therefore, all Silverstripe websites contain a special controller which can be
-visited: http://yoursite.com/sitemap.xml. This is not a file directly, but
+Therefore, all Silverstripe CMS websites contain a special controller which can
+be visited: http://yoursite.com/sitemap.xml. This is not a file directly, but
 rather a custom route which points to the GoogleSitemap controller.
 
 See http://en.wikipedia.org/wiki/Sitemaps for info on the Google Sitemap
 format.
 
-Whenever you publish a new or republish an existing page, SilverStripe can
+Whenever you publish a new or republish an existing page, Silverstripe CMS can
 automatically inform Google of the change, encouraging a Google to take notice.
-If you install the SilverStripe Google Analytics module, you can see if Google
+If you install the Silverstripe CMS Google Analytics module, you can see if Google
 has updated your page as a result.
 
-By default, SilverStripe informs Google that the importance of a page depends
+By default, Silverstripe CMS informs Google that the importance of a page depends
 on its position of in the sitemap. "Top level" pages are most important, and
 the deeper a page is nested, the less important it is. (For each level,
 Importance drops from 1.0, to 0.9, to 0.8, and so on, until 0.1 is reached).
@@ -27,8 +27,8 @@ manually, including requesting to have the page excluded from the sitemap.
 
 ## Configuration
 
-Most module configuration is done via the SilverStripe Config API. Create a new
-config file `mysite/_config/googlesitemaps.yml` with the following outline:
+Most module configuration is done via the Silverstripe CMS Config API. Create a
+new config file `mysite/_config/googlesitemaps.yml` with the following outline:
 
     ---
     Name: customgooglesitemaps
@@ -115,10 +115,10 @@ http://www.silvercart.org/blog/dataobjects-and-googlesitemaps/
 
 ### Including custom routes
 
-Occasionally you may have a need to include custom url's in your sitemap for
+Occasionally you may have a need to include custom URLs in your sitemap for
 your Controllers and other pages which don't exist in the database. To update
 the sitemap to include those links call register_routes() with your array of
-urls to include.
+URLs to include.
 
     use Wilr\GoogleSitemaps\GoogleSitemap;
 
@@ -131,7 +131,7 @@ urls to include.
 ### Sitemapable
 
 For automatic registration of a DataObject subclass, implement the `Sitemapable`
-extension
+extension.
 
 ```
 <?php
