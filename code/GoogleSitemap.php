@@ -48,7 +48,7 @@ use SilverStripe\View\ArrayData;
  *
  * @package googlesitemaps
  */
-class GoogleSitemap extends Object
+class GoogleSitemap extends SS_Object
 {
 
     /**
