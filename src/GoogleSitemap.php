@@ -29,17 +29,8 @@ use ReflectionException;
  * The GoogleSitemap handle requests to 'sitemap.xml' the other two classes are
  * used to render the sitemap.
  *
- * You can notify ("ping") Google about a changed sitemap automatically whenever
- * a new page is published or unpublished.
- *
- * By default, Google is not notified, and will pick up your new sitemap
- * whenever the GoogleBot visits your website.
- *
- * To Enable notification of Google after every publish set google_notification_enabled
- * to true in the googlesitemaps.yml config file.
- *
- * This file is usually located in the _config folder of your project folder.
- * e.g mysite/_config/googlesitemaps.yml
+ * The config file is usually located in the _config folder of your project folder.
+ * e.g. app/_config/googlesitemaps.yml
  *
  * <example>
  *  ---
@@ -49,7 +40,6 @@ use ReflectionException;
  *  Wilr\GoogleSitemaps\GoogleSitemap:
  *      enabled: true
  *      objects_per_sitemap: 1000
- *      google_notification_enabled: true
  *      use_show_in_search: true
  * </example>
  *
@@ -83,15 +73,6 @@ class GoogleSitemap
      * @var boolean
      */
     private static $exclude_redirector_pages = true;
-
-    /**
-     * @config
-     *
-     * @var array
-     */
-    private static $search_indexes = [
-        'google' => 'http://www.google.com/webmasters/sitemaps/ping?sitemap='
-    ];
 
     /**
      * Decorates the given DataObject with {@link GoogleSitemapDecorator}
@@ -450,41 +431,6 @@ class GoogleSitemap
     public static function get_sitemaps()
     {
         return static::inst()->getSitemaps();
-    }
-
-    /**
-     * Notifies search indexes about changes to your sitemap. This behavior is disabled
-     * by default, to enable, read the documentation provided in the docs folder.
-     *
-     * After notifications have been enabled, every publish / unpublish of a page.
-     * will notify enabled search indexes of the update.
-     *
-     * If the site is in development mode no ping will be sent.
-     *
-     * @return boolean
-     */
-    public static function ping()
-    {
-        if (!self::enabled() || Director::isDev()) {
-            return false;
-        }
-
-        $location = urlencode(Controller::join_links(
-            Director::absoluteBaseURL(),
-            'sitemap.xml'
-        ));
-
-        $response = true;
-
-        foreach (self::config()->search_indexes as $name => $url) {
-            $configName = $name . '_notification_enabled';
-
-            if (self::config()->$configName) {
-                $response = $response && file_get_contents($url . $location);
-            }
-        }
-
-        return $response;
     }
 
     /**

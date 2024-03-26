@@ -73,24 +73,6 @@ class GoogleSitemapExtension extends DataExtension
         return $can;
     }
 
-
-    /**
-     * @return void
-     */
-    public function onAfterPublish()
-    {
-        GoogleSitemap::ping();
-    }
-
-    /**
-     * @return void
-     */
-    public function onAfterUnpublish()
-    {
-        GoogleSitemap::ping();
-    }
-
-
     /**
      * The default value of the priority field depends on the depth of the page in
      * the site tree, so it must be calculated dynamically.
