@@ -38,14 +38,10 @@ After: googlesitemaps
 Wilr\GoogleSitemaps\GoogleSitemap:
   enabled: true
   objects_per_sitemap: 1000
-  google_notification_enabled: false
   use_show_in_search: true
 ```
 
-You can now alter any of those properties to set your needs. A popular option
-is to turn on automatic pinging so that Google is notified of any updates to
-your page. You can set this in the file we created in the last paragraph by
-editing the `google_notification_enabled` option to true
+You can now alter any of those properties to set your needs.
 
 ```yml
 ---
@@ -54,9 +50,8 @@ After: googlesitemaps
 ---
 Wilr\GoogleSitemaps\GoogleSitemap:
   enabled: true
-    objects_per_sitemap: 1000
-    google_notification_enabled: true
-    use_show_in_search: true
+  objects_per_sitemap: 1000
+  use_show_in_search: true
 ```
 
 ### Including DataObjects
