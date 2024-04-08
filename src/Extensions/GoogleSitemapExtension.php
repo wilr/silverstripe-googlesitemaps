@@ -33,7 +33,7 @@ class GoogleSitemapExtension extends DataExtension
                 }
             }
 
-            $objHttp = parse_url($this->owner->AbsoluteLink(), PHP_URL_HOST);
+            $objHttp = parse_url($this->owner->AbsoluteLink() ?? '', PHP_URL_HOST);
 
             if ($objHttp != $hostHttp) {
                 $can = false;
