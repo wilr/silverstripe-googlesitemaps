@@ -7,7 +7,7 @@ use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
 use Wilr\GoogleSitemaps\GoogleSitemap;
-use SilverStripe\View\ArrayData;
+use SilverStripe\Model\ArrayData;
 
 /**
  * Controller for displaying the sitemap.xml. The module displays an index

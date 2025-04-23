@@ -3,7 +3,7 @@
 namespace Wilr\GoogleSitemaps\Extensions;
 
 use SilverStripe\Control\Director;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Subsites\Model\Subsite;
 use Wilr\GoogleSitemaps\GoogleSitemap;
@@ -12,7 +12,7 @@ use Wilr\GoogleSitemaps\GoogleSitemap;
  * Decorate the page object to provide google sitemaps with additional options
  * and configuration.
  */
-class GoogleSitemapExtension extends DataExtension
+class GoogleSitemapExtension extends Extension
 {
 
     /**
