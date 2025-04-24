@@ -17,7 +17,7 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         "Priority" => "Varchar(5)"
     ];
 
-    function updateCMSFields(FieldList $fields)
+    public function updateCMSFields(FieldList $fields)
     {
         $fields->removeByName('Priority');
     }

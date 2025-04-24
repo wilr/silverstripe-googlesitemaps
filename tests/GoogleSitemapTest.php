@@ -94,7 +94,11 @@ class GoogleSitemapTest extends FunctionalTest
         $google = new GoogleSitemap();
 
         $items = $google->getItems(TestDataObject::class, 1);
-        $this->assertEquals(2, $items->count(), 'DataObjectTest1 and DataObjectTest2 should be in the sitemap, DataObjectTest3 should not');
+        $this->assertEquals(
+            2,
+            $items->count(),
+            'DataObjectTest1 and DataObjectTest2 should be in the sitemap, DataObjectTest3 should not'
+        );
 
         GoogleSitemap::register_dataobject(OtherDataObject::class);
         $this->assertEquals(1, $google->getItems(OtherDataObject::class, 1)->count());
