@@ -20,15 +20,22 @@
         "silverstripe/framework": "^6"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "squizlabs/php_codesniffer": "^3"
+        "phpunit/phpunit": "^11",
+        "silverstripe/standards": "^1",
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpstan/extension-installer": "^1.3"
     },
     "replace": {
         "silverstripe/googlesitemaps": "*"
     },
+    "scripts": {
+        "test": "phpunit",
+        "lint": "phpcs src/ tests/",
+        "lint-clean": "phpcbf src/ tests/"
+    },
     "extra": {
         "branch-alias": {
-            "dev-main": "3.x-dev"
+            "dev-main": "4.x-dev"
         },
         "expose": [
             "images",
@@ -47,7 +54,8 @@
         "allow-plugins": {
             "composer/installers": true,
             "silverstripe/vendor-plugin": true,
-            "silverstripe/recipe-plugin": true
+            "silverstripe/recipe-plugin": true,
+            "phpstan/extension-installer": true
         }
     }
 }

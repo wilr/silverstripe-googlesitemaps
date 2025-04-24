@@ -2,3 +2,5 @@
 /vendor
 /public
 /composer.lock
+.phpunit.result.cache
+.env
