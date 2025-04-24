@@ -66,12 +66,10 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         $priority->setEmptyString(_t('GoogleSitemaps.PRIORITYAUTOSET', 'Auto-set based on page depth'));
     }
 
-    /*public function updateFieldLabels(&$labels)
+    public function updateFieldLabels(&$labels)
     {
-        parent::updateFieldLabels($labels);
-
         $labels['Priority'] = _t('GoogleSitemaps.METAPAGEPRIO', "Page Priority");
-    }*/
+    }
 
     /**
      * Ensure that all parent pages of this page (if any) are published
