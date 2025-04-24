@@ -5,6 +5,7 @@ namespace Wilr\GoogleSitemaps\Extensions;
 use SilverStripe\Assets\Image;
 use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\Tab;
 use SilverStripe\Model\List\ArrayList;
@@ -15,6 +16,11 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
     private static $db = [
         "Priority" => "Varchar(5)"
     ];
+
+    function updateCMSFields(FieldList $fields)
+    {
+        $fields->removeByName('Priority');
+    }
 
     public function updateSettingsFields(&$fields)
     {
