@@ -3,7 +3,6 @@
 namespace Wilr\GoogleSitemaps;
 
 use SilverStripe\Control\Director;
-use SilverStripe\Control\Controller;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Model\List\ArrayList;
@@ -57,7 +56,7 @@ class GoogleSitemap
      *
      * @var array
      */
-    private static $dataobjects = [];
+    private static array $dataobjects = [];
 
     /**
      * List of custom routes to include in the sitemap (such as controller
@@ -65,58 +64,40 @@ class GoogleSitemap
      *
      * @var array
      */
-    private static $routes = [];
+    private static array $routes = [];
 
     /**
      * @config
      *
      * @var boolean
      */
-    private static $exclude_redirector_pages = true;
+    private static bool $exclude_redirector_pages = true;
 
     /**
      * Decorates the given DataObject with {@link GoogleSitemapDecorator}
      * and pushes the class name to the registered DataObjects.
      * Note that all registered DataObjects need the method AbsoluteLink().
-     *
-     * @param string $className  name of DataObject to register
-     * @param string $changeFreq how often is this DataObject updated?
-     *                           Possible values:
-     *                           always, hourly, daily, weekly, monthly, yearly, never
-     * @param string $priority   How important is this DataObject in comparison to other urls?
-     *                           Possible values: 0.1, 0.2 ... , 0.9, 1.0
-     *
-     * @return void
      */
-    public static function register_dataobject($className, $changeFreq = 'monthly', $priority = '0.6')
+    public static function register_dataobject(string $class, string $frequency = 'monthly', string $priority = '0.6')
     {
-        if (!self::is_registered($className)) {
-            $className::add_extension(GoogleSitemapExtension::class);
+        if (!GoogleSitemap::is_registered($class)) {
+            $class::add_extension(GoogleSitemapExtension::class);
 
-            self::$dataobjects[$className] = [
-                'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
+            GoogleSitemap::$dataobjects[$class] = [
+                'frequency' => ($frequency) ? $frequency : 'monthly',
                 'priority' => ($priority) ? $priority : '0.6'
             ];
         }
     }
 
     /**
-     * Registers multiple dataobjects in a single line. See {@link register_dataobject}
+     * Registers multiple {@link DataObject} classes in a single line. See {@link register_dataobject}
      * for the heavy lifting
-     *
-     * @param array $dataobjects array of class names of DataObject to register
-     * @param string $changeFreq how often is this DataObject updated?
-     *                           Possible values:
-     *                           always, hourly, daily, weekly, monthly, yearly, never
-     * @param string $priority   How important is this DataObject in comparison to other urls?
-     *                           Possible values: 0.1, 0.2 ... , 0.9, 1.0
-     *
-     * @return void
      */
-    public static function register_dataobjects($dataobjects, $changeFreq = 'monthly', $priority = '0.6')
+    public static function register_dataobjects(array $classes, string $frequency = 'monthly', string $priority = '0.6')
     {
-        foreach ($dataobjects as $obj) {
-            self::register_dataobject($obj, $changeFreq, $priority);
+        foreach ($classes as $class) {
+            GoogleSitemap::register_dataobject($class, $frequency, $priority);
         }
     }
 
@@ -129,8 +110,8 @@ class GoogleSitemap
      */
     public static function is_registered($className)
     {
-        if (!isset(self::$dataobjects[$className])) {
-            $lowerKeys = array_change_key_case(self::$dataobjects);
+        if (!isset(GoogleSitemap::$dataobjects[$className])) {
+            $lowerKeys = array_change_key_case(GoogleSitemap::$dataobjects);
 
             return isset($lowerKeys[$className]);
         }
@@ -145,7 +126,7 @@ class GoogleSitemap
      */
     public static function unregister_dataobject($className)
     {
-        unset(self::$dataobjects[$className]);
+        unset(GoogleSitemap::$dataobjects[$className]);
     }
 
     /**
@@ -155,7 +136,7 @@ class GoogleSitemap
      */
     public static function clear_registered_dataobjects()
     {
-        self::$dataobjects = array();
+        GoogleSitemap::$dataobjects = [];
     }
 
     /**
@@ -169,12 +150,12 @@ class GoogleSitemap
      */
     public static function register_route($route, $changeFreq = 'monthly', $priority = '0.6')
     {
-        self::$routes = array_merge(self::$routes, array(
-            $route => array(
+        GoogleSitemap::$routes = array_merge(GoogleSitemap::$routes, [
+            $route => [
                 'frequency' => ($changeFreq) ? $changeFreq : 'monthly',
                 'priority' => ($priority) ? $priority : '0.6'
-            )
-        ));
+            ]
+        ]);
     }
 
     /**
@@ -190,7 +171,7 @@ class GoogleSitemap
     public static function register_routes($routes, $changeFreq = 'monthly', $priority = '0.6')
     {
         foreach ($routes as $route) {
-            self::register_route($route, $changeFreq, $priority);
+            GoogleSitemap::register_route($route, $changeFreq, $priority);
         }
     }
 
@@ -201,7 +182,7 @@ class GoogleSitemap
      */
     public static function clear_registered_routes()
     {
-        self::$routes = array();
+        GoogleSitemap::$routes = [];
     }
 
     /**
@@ -250,16 +231,16 @@ class GoogleSitemap
                 }
             }
         } elseif ($class == "GoogleSitemapRoute") {
-            $instances = array_slice(self::$routes, ($page - 1) * $count, $count);
+            $instances = array_slice(GoogleSitemap::$routes, ($page - 1) * $count, $count);
             $output = new ArrayList();
 
             if ($instances) {
                 foreach ($instances as $route => $config) {
-                    $output->push(new ArrayData(array(
+                    $output->push(new ArrayData([
                         'AbsoluteLink' => Director::absoluteURL($route),
                         'ChangeFrequency' => $config['frequency'],
                         'GooglePriority' => $config['priority']
-                    )));
+                    ]));
                 }
             }
 
@@ -313,7 +294,7 @@ class GoogleSitemap
      */
     public static function get_frequency_for_class($class)
     {
-        foreach (self::$dataobjects as $type => $config) {
+        foreach (GoogleSitemap::$dataobjects as $type => $config) {
             if ($class == $type) {
                 return $config['frequency'];
             }
@@ -331,7 +312,7 @@ class GoogleSitemap
      */
     public static function get_priority_for_class($class)
     {
-        foreach (self::$dataobjects as $type => $config) {
+        foreach (GoogleSitemap::$dataobjects as $type => $config) {
             if ($class == $type) {
                 return $config['priority'];
             }
@@ -376,16 +357,16 @@ class GoogleSitemap
 
                 $lastModified = ($lastEdited) ? date('Y-m-d', strtotime($lastEdited)) : date('Y-m-d');
 
-                $sitemaps->push(new ArrayData(array(
+                $sitemaps->push(new ArrayData([
                     'ClassName' => $this->sanitiseClassName('SilverStripe\CMS\Model\SiteTree'),
                     'LastModified' => $lastModified,
                     'Page' => $i
-                )));
+                ]));
             }
         }
 
-        if (count(self::$dataobjects) > 0) {
-            foreach (self::$dataobjects as $class => $config) {
+        if (count(GoogleSitemap::$dataobjects) > 0) {
+            foreach (GoogleSitemap::$dataobjects as $class => $config) {
                 $list = new DataList($class);
                 $list = $list->sort('LastEdited ASC');
                 $this->extend("alterDataList", $list, $class);
@@ -399,23 +380,23 @@ class GoogleSitemap
 
                     $lastModified = ($sliced) ? date('Y-m-d', strtotime($sliced->LastEdited)) : date('Y-m-d');
 
-                    $sitemaps->push(new ArrayData(array(
+                    $sitemaps->push(new ArrayData([
                         'ClassName' => $this->sanitiseClassName($class),
                         'Page' => $i,
                         'LastModified' => $lastModified
-                    )));
+                    ]));
                 }
             }
         }
 
-        if (count(self::$routes) > 0) {
-            $needed = ceil(count(self::$routes) / $countPerFile);
+        if (count(GoogleSitemap::$routes) > 0) {
+            $needed = ceil(count(GoogleSitemap::$routes) / $countPerFile);
 
             for ($i = 1; $i <= $needed; $i++) {
-                $sitemaps->push(new ArrayData(array(
+                $sitemaps->push(new ArrayData([
                     'ClassName' => 'GoogleSitemapRoute',
                     'Page' => $i
-                )));
+                ]));
             }
         }
 
