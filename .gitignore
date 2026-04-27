@@ -6,3 +6,4 @@
 .env
 /coverage
 /.phpunit.cache
+/app

@@ -8,7 +8,9 @@ use SilverStripe\Dev\FunctionalTest;
 use Wilr\GoogleSitemaps\Extensions\GoogleSitemapExtension;
 use Wilr\GoogleSitemaps\GoogleSitemap;
 use Wilr\GoogleSitemaps\GoogleSitemapGenerator;
+use Wilr\GoogleSitemaps\Tests\Model\OtherDataObject;
 use Wilr\GoogleSitemaps\Tests\Model\TestDataObject;
+use Wilr\GoogleSitemaps\Tests\Model\UnviewableDataObject;
 
 /**
  * End-to-end tests that exercise the controller while the static cache is
@@ -24,6 +26,8 @@ class GoogleSitemapStaticCacheTest extends FunctionalTest
 
     protected static $extra_dataobjects = [
         TestDataObject::class,
+        OtherDataObject::class,
+        UnviewableDataObject::class,
     ];
 
     protected static $extra_extensions = [

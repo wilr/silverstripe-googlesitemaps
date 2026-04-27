@@ -8,7 +8,6 @@ use SilverStripe\Control\Director;
 
 class UnviewableDataObject extends DataObject implements TestOnly
 {
-
     private static $db = array(
         'Priority' => 'Varchar(10)'
     );

@@ -106,6 +106,32 @@ instead of the previous code you would write:
 
     GoogleSitemap::register_dataobject('MyDataObject', 'daily');
 
+#### Filtering moderated or expired records
+
+DataObjects often override `canView()` to hide rows that are pending
+moderation, soft-deleted, or have expired. Without server-side filtering, the
+sitemap still pulls those rows in, runs `canView()` per row, and quietly drops
+them — which can leave entire paged sub-sitemaps empty (Google flags these as
+errors in Search Console).
+
+Register the DataObject with `$filters` and `$exclude` arrays so the same rules
+are applied directly in SQL. They use the standard
+`DataList::filter()` / `DataList::exclude()` syntax:
+
+    use Wilr\GoogleSitemaps\GoogleSitemap;
+
+    GoogleSitemap::register_dataobject(
+        BlogPost::class,
+        'weekly',
+        '0.7',
+        ['Status' => 'Approved'],
+        ['ExpiryDate:LessThan' => date('Y-m-d')]
+    );
+
+The same arguments are accepted by `register_dataobjects()`, in which case the
+filters apply to every class in the array. Per-class rules need separate
+`register_dataobject()` calls.
+
 See the following blog post for more information:
 
 http://www.silvercart.org/blog/dataobjects-and-googlesitemaps/

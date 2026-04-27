@@ -32,14 +32,12 @@ use SilverStripe\Model\ArrayData;
  */
 class GoogleSitemapController extends Controller
 {
-
     /**
      * @var array
      */
     private static $allowed_actions = [
         'index',
         'sitemap',
-        'gz',
         'styleSheetIndex',
         'styleSheet'
     ];
@@ -49,12 +47,21 @@ class GoogleSitemapController extends Controller
      * Default controller action for the sitemap.xml file. Renders a index
      * file containing a list of links to sub sitemaps containing the data.
      *
+     * Also serves /sitemap.xml.gz: the framework's URL parser strips trailing
+     * extensions so /sitemap.xml.gz arrives here with the same URL as
+     * /sitemap.xml plus an extension of `gz` on the request — we detect that
+     * and serve the gzipped file from the static cache.
+     *
      * @return mixed
      */
     public function index($url)
     {
         if (!GoogleSitemap::enabled()) {
             return new HTTPResponse('Page not found', 404);
+        }
+
+        if ($this->isGzipRequest()) {
+            return $this->serveGzippedIndex();
         }
 
         $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
@@ -94,7 +101,8 @@ class GoogleSitemapController extends Controller
             }
         }
 
-        if (GoogleSitemap::enabled()
+        if (
+            GoogleSitemap::enabled()
             && $class
             && ($page > 0)
             && ($class == SiteTree::class || $class == 'GoogleSitemapRoute' || GoogleSitemap::is_registered($class))
@@ -126,14 +134,25 @@ class GoogleSitemapController extends Controller
     }
 
     /**
+     * Whether this request is for the gzipped sitemap. The framework strips
+     * trailing dotted extensions from the URL during parsing, so a request to
+     * /sitemap.xml.gz arrives here as /sitemap.xml with an extension of `gz`.
+     */
+    protected function isGzipRequest(): bool
+    {
+        return $this->getRequest()
+            && strtolower((string) $this->getRequest()->getExtension()) === 'gz';
+    }
+
+    /**
      * Serve the gzipped sitemap index from disk. Only available when the
      * static cache is enabled and a .gz copy of the index exists; otherwise a
      * 404 response is returned so consumers do not download stale or
      * inconsistent files.
      */
-    public function gz()
+    protected function serveGzippedIndex(): HTTPResponse
     {
-        if (!GoogleSitemap::enabled() || !$this->staticCacheEnabled()) {
+        if (!$this->staticCacheEnabled()) {
             return new HTTPResponse('Page not found', 404);
         }
 

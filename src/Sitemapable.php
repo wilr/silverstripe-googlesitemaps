@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Wilr\GoogleSitemaps;
 
 interface Sitemapable

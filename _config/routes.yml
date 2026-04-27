@@ -4,4 +4,3 @@ Name: googlesitemaproutes
 SilverStripe\Control\Director:
   rules:
     'sitemap.xml': 'Wilr\GoogleSitemaps\Control\GoogleSitemapController'
-    'sitemap.xml.gz': 'Wilr\GoogleSitemaps\Control\GoogleSitemapController/gz'

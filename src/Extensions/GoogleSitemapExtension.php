@@ -14,7 +14,6 @@ use Wilr\GoogleSitemaps\GoogleSitemap;
  */
 class GoogleSitemapExtension extends Extension
 {
-
     /**
      * @return boolean
      */

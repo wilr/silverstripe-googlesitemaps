@@ -1,5 +1,10 @@
 <?php
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
+// The early return below is required because silverstripe/queuedjobs is an
+// optional dependency. Without the guard the class manifest scanner would
+// reflect this class while loading config and fatal on the missing parent.
+
 namespace Wilr\GoogleSitemaps\Jobs;
 
 use SilverStripe\Core\Config\Config;
@@ -10,9 +15,6 @@ use Symbiote\QueuedJobs\Services\QueuedJobService;
 use Wilr\GoogleSitemaps\GoogleSitemap;
 use Wilr\GoogleSitemaps\GoogleSitemapGenerator;
 
-// Only define the job when queuedjobs is installed; otherwise the autoloader
-// would try to resolve AbstractQueuedJob and fatal. This file is autoloaded
-// via PSR-4 only when something explicitly references the class.
 if (!class_exists(AbstractQueuedJob::class)) {
     return;
 }

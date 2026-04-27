@@ -112,27 +112,69 @@ class GoogleSitemap
      * Decorates the given DataObject with {@link GoogleSitemapDecorator}
      * and pushes the class name to the registered DataObjects.
      * Note that all registered DataObjects need the method AbsoluteLink().
+     *
+     * The optional `$filters` and `$exclude` arrays are forwarded straight to
+     * `DataList::filter()` and `DataList::exclude()` when the sitemap pulls
+     * records for this class. They are useful for DataObjects whose `canView`
+     * implementation rejects (eg. moderated or expired) records — without
+     * pre-filtering, those rows still count towards pagination and can leave
+     * entire sub-sitemap files empty.
+     *
+     *   GoogleSitemap::register_dataobject(
+     *       BlogPost::class,
+     *       'weekly',
+     *       '0.7',
+     *       ['Status' => 'Approved'],
+     *       ['ExpiryDate:LessThan' => date('Y-m-d')]
+     *   );
+     *
+     * @param string $class
+     * @param string $frequency
+     * @param string $priority
+     * @param array<string, mixed> $filters
+     * @param array<string, mixed> $exclude
      */
-    public static function register_dataobject(string $class, string $frequency = 'monthly', string $priority = '0.6')
-    {
+    public static function register_dataobject(
+        string $class,
+        string $frequency = 'monthly',
+        string $priority = '0.6',
+        array $filters = [],
+        array $exclude = []
+    ) {
         if (!GoogleSitemap::is_registered($class)) {
             $class::add_extension(GoogleSitemapExtension::class);
 
             GoogleSitemap::$dataobjects[$class] = [
                 'frequency' => ($frequency) ? $frequency : 'monthly',
-                'priority' => ($priority) ? $priority : '0.6'
+                'priority' => ($priority) ? $priority : '0.6',
+                'filters' => $filters,
+                'exclude' => $exclude,
             ];
         }
     }
 
     /**
      * Registers multiple {@link DataObject} classes in a single line. See {@link register_dataobject}
-     * for the heavy lifting
+     * for the heavy lifting.
+     *
+     * The same `$filters` and `$exclude` arrays are applied to every class in
+     * the list — register classes individually if you need per-class rules.
+     *
+     * @param array<int, string> $classes
+     * @param string $frequency
+     * @param string $priority
+     * @param array<string, mixed> $filters
+     * @param array<string, mixed> $exclude
      */
-    public static function register_dataobjects(array $classes, string $frequency = 'monthly', string $priority = '0.6')
-    {
+    public static function register_dataobjects(
+        array $classes,
+        string $frequency = 'monthly',
+        string $priority = '0.6',
+        array $filters = [],
+        array $exclude = []
+    ) {
         foreach ($classes as $class) {
-            GoogleSitemap::register_dataobject($class, $frequency, $priority);
+            GoogleSitemap::register_dataobject($class, $frequency, $priority, $filters, $exclude);
         }
     }
 
@@ -282,6 +324,7 @@ class GoogleSitemap
             return $output;
         } else {
             $instances = new DataList($class);
+            $instances = GoogleSitemap::applyRegisteredFilters($instances, $class);
         }
 
         $this->extend("alterDataList", $instances, $class);
@@ -403,6 +446,7 @@ class GoogleSitemap
         if (count(GoogleSitemap::$dataobjects) > 0) {
             foreach (GoogleSitemap::$dataobjects as $class => $config) {
                 $list = new DataList($class);
+                $list = GoogleSitemap::applyRegisteredFilters($list, $class);
                 $list = $list->sort('LastEdited ASC');
                 $this->extend("alterDataList", $list, $class);
                 $neededForClass = ceil($list->count() / $countPerFile);
@@ -478,5 +522,34 @@ class GoogleSitemap
     protected function sanitiseClassName($class)
     {
         return str_replace('\\', '-', (string) $class);
+    }
+
+    /**
+     * Applies the `filters` and `exclude` arrays that were supplied at
+     * registration time to a DataList. Pulled out so both `getItems()` and
+     * `getSitemaps()` apply identical pre-filtering — without this the index
+     * file and the actual sub-sitemap can disagree on how many pages exist,
+     * which is what produces the empty sitemap files seen with strict
+     * `canView` overrides.
+     *
+     * @return DataList
+     */
+    public static function applyRegisteredFilters(DataList $list, string $class): DataList
+    {
+        if (!isset(GoogleSitemap::$dataobjects[$class])) {
+            return $list;
+        }
+
+        $config = GoogleSitemap::$dataobjects[$class];
+
+        if (!empty($config['filters']) && is_array($config['filters'])) {
+            $list = $list->filter($config['filters']);
+        }
+
+        if (!empty($config['exclude']) && is_array($config['exclude'])) {
+            $list = $list->exclude($config['exclude']);
+        }
+
+        return $list;
     }
 }

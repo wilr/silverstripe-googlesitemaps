@@ -1,22 +1,11 @@
 <?xml version="1.0"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="vendor/silverstripe/framework/tests/bootstrap.php" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage includeUncoveredFiles="true">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="vendor/silverstripe/cms/tests/bootstrap.php" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" failOnWarning="false" failOnDeprecation="false">
+  <source>
     <include>
       <directory suffix=".php">src/</directory>
     </include>
-    <exclude>
-      <directory suffix=".php">tests/</directory>
-    </exclude>
-    <report>
-      <html outputDirectory="coverage/html"/>
-      <clover outputFile="coverage/clover.xml"/>
-      <text outputFile="coverage/coverage.txt" showOnlySummary="true"/>
-    </report>
-  </coverage>
+  </source>
   <testsuite name="Default">
     <directory>tests</directory>
   </testsuite>
-  <logging>
-    <junit outputFile="coverage/junit.xml"/>
-  </logging>
 </phpunit>

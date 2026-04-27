@@ -22,7 +22,8 @@ class GenerateGoogleSitemapTask extends BuildTask
 
     protected string $title = 'Generate Google Sitemap static files';
 
-    protected static string $description = 'Render the sitemap index and all sub-sitemaps to disk for static serving (with optional .gz copies).';
+    protected static string $description = 'Render the sitemap index and all sub-sitemaps to disk for static serving '
+        . '(with optional .gz copies).';
 
     protected function execute(InputInterface $input, PolyOutput $output): int
     {

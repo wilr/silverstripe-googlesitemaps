@@ -1,0 +1,21 @@
+Wilr\GoogleSitemaps\Tests\Model\ModeratedDataObject:
+  Approved1:
+    Title: 'Approved post 1'
+    Status: 'Approved'
+    ExpiresAt: '2099-01-01'
+  Approved2:
+    Title: 'Approved post 2'
+    Status: 'Approved'
+    ExpiresAt: '2099-01-01'
+  Pending1:
+    Title: 'Awaiting moderation'
+    Status: 'Pending'
+    ExpiresAt: '2099-01-01'
+  Rejected1:
+    Title: 'Rejected post'
+    Status: 'Rejected'
+    ExpiresAt: '2099-01-01'
+  Expired1:
+    Title: 'Expired but approved'
+    Status: 'Approved'
+    ExpiresAt: '2000-01-01'
