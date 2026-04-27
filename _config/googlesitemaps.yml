@@ -5,6 +5,10 @@ Wilr\GoogleSitemaps\GoogleSitemap:
   enabled: true
   objects_per_sitemap: 1000
   use_show_in_search: true
+  enable_static_cache: false
+  enable_gzip: true
+  static_cache_path: 'sitemaps'
+  regenerate_time: 3600
 ---
 Only:
   classexists: SilverStripe\CMS\Model\SiteTree

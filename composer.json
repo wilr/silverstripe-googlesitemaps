@@ -32,6 +32,7 @@
     },
     "scripts": {
         "test": "phpunit",
+        "test:coverage": "phpunit --coverage-html coverage/html --coverage-clover coverage/clover.xml --coverage-text",
         "lint": "phpcs src/ tests/",
         "lint-clean": "phpcbf src/ tests/",
         "phpstan": "phpstan analyse"

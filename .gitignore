@@ -4,3 +4,5 @@
 /composer.lock
 .phpunit.result.cache
 .env
+/coverage
+/.phpunit.cache

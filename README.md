@@ -28,6 +28,45 @@ Sitemap.
 
 The XML Sitemap can be accessed by going to http://yoursite.com/sitemap.xml
 
+## Static cache and gzipped sitemaps (sitemap.xml.gz)
+
+Google's [sitemap protocol](https://www.sitemaps.org/protocol.html) recommends
+serving sitemaps as gzipped `.xml.gz` files. This module can render the sitemap
+index and all sub-sitemaps to disk on a schedule and serve those static files
+on subsequent requests, including a `/sitemap.xml.gz` endpoint.
+
+Enable the static cache in YAML:
+
+```yml
+Wilr\GoogleSitemaps\GoogleSitemap:
+  enable_static_cache: true
+  enable_gzip: true
+  static_cache_path: 'sitemaps'
+  regenerate_time: 3600
+```
+
+Generate the files manually:
+
+```
+sake dev:tasks:GenerateGoogleSitemapTask
+```
+
+Or, if you have [silverstripe/queuedjobs](https://github.com/symbiote/silverstripe-queuedjobs)
+installed, queue the bundled `GenerateGoogleSitemapJob` and it will re-queue
+itself every `regenerate_time` seconds (defaulting to hourly):
+
+```php
+use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Wilr\GoogleSitemaps\Jobs\GenerateGoogleSitemapJob;
+
+singleton(QueuedJobService::class)->queueJob(new GenerateGoogleSitemapJob());
+```
+
+`enable_gzip` is opt-in but transparently downgrades to XML-only output if the
+running PHP build does not have zlib support.
+
+See `docs/en/index.md` for the full configuration reference.
+
 ## Usage Overview
 
 See docs/en for more information about configuring the module.
@@ -35,3 +74,20 @@ See docs/en for more information about configuring the module.
 ## Troubleshooting
 
 -   Flush this route to ensure the changes take effect (e.g http://yoursite.com/sitemap.xml?flush=1)
+-   When using the static cache, regenerate after publishing changes via `sake dev:tasks:GenerateGoogleSitemapTask` or wait for the scheduled job.
+
+## Running tests
+
+```
+composer install
+vendor/bin/phpunit
+```
+
+To generate code coverage (requires Xdebug or PCOV installed and enabled):
+
+```
+composer test:coverage
+```
+
+Reports are written to `coverage/html/index.html` (HTML), `coverage/clover.xml`
+(Clover, useful for CI), and a textual summary on stdout.

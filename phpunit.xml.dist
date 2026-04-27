@@ -7,8 +7,16 @@
     <exclude>
       <directory suffix=".php">tests/</directory>
     </exclude>
+    <report>
+      <html outputDirectory="coverage/html"/>
+      <clover outputFile="coverage/clover.xml"/>
+      <text outputFile="coverage/coverage.txt" showOnlySummary="true"/>
+    </report>
   </coverage>
   <testsuite name="Default">
     <directory>tests</directory>
   </testsuite>
+  <logging>
+    <junit outputFile="coverage/junit.xml"/>
+  </logging>
 </phpunit>

@@ -6,7 +6,10 @@ use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use Wilr\GoogleSitemaps\GoogleSitemap;
+use Wilr\GoogleSitemaps\GoogleSitemapGenerator;
 use SilverStripe\Model\ArrayData;
 
 /**
@@ -17,7 +20,13 @@ use SilverStripe\Model\ArrayData;
  * <code>
  * http://site.com/sitemap.xml/
  * http://site.com/sitemap.xml/sitemap/$ClassName-$Page.xml
+ * http://site.com/sitemap.xml.gz
  * </code>
+ *
+ * When `Wilr\GoogleSitemaps\GoogleSitemap.enable_static_cache` is true the
+ * controller will serve files written by {@link GoogleSitemapGenerator} from
+ * disk rather than rendering them on every request. The same flag enables
+ * /sitemap.xml.gz, which is the format Google's sitemap protocol recommends.
  *
  * @package googlesitemaps
  */
@@ -30,6 +39,7 @@ class GoogleSitemapController extends Controller
     private static $allowed_actions = [
         'index',
         'sitemap',
+        'gz',
         'styleSheetIndex',
         'styleSheet'
     ];
@@ -43,19 +53,28 @@ class GoogleSitemapController extends Controller
      */
     public function index($url)
     {
-        if (GoogleSitemap::enabled()) {
-            $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
-            $this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
-
-            $sitemaps = GoogleSitemap::inst()->getSitemaps();
-            $this->extend('updateGoogleSitemaps', $sitemaps);
-
-            return $this->customise(new ArrayData([
-                'Sitemaps' => $sitemaps,
-            ]))->renderWith(__CLASS__);
-        } else {
+        if (!GoogleSitemap::enabled()) {
             return new HTTPResponse('Page not found', 404);
         }
+
+        $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
+        $this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
+
+        if ($this->staticCacheEnabled()) {
+            $generator = $this->getGenerator();
+            $path = $generator->indexPath();
+
+            if (file_exists($path)) {
+                return $this->getResponse()->setBody((string) file_get_contents($path));
+            }
+        }
+
+        $sitemaps = GoogleSitemap::inst()->getSitemaps();
+        $this->extend('updateGoogleSitemaps', $sitemaps);
+
+        return $this->customise(new ArrayData([
+            'Sitemaps' => $sitemaps,
+        ]))->renderWith(__CLASS__);
     }
 
     /**
@@ -83,6 +102,18 @@ class GoogleSitemapController extends Controller
             $this->getResponse()->addHeader('Content-Type', 'application/xml; charset="utf-8"');
             $this->getResponse()->addHeader('X-Robots-Tag', 'noindex');
 
+            if ($this->staticCacheEnabled()) {
+                $generator = $this->getGenerator();
+                $sanitised = str_replace('\\', '-', (string) $class);
+                $cached = $generator->getCacheDirectory()
+                    . DIRECTORY_SEPARATOR
+                    . $generator->subSitemapFileName($sanitised, $page);
+
+                if (file_exists($cached)) {
+                    return $this->getResponse()->setBody((string) file_get_contents($cached));
+                }
+            }
+
             $items = GoogleSitemap::inst()->getItems($class, $page);
             $this->extend('updateGoogleSitemapItems', $items, $class, $page);
 
@@ -92,6 +123,33 @@ class GoogleSitemapController extends Controller
         }
 
         return new HTTPResponse('Page not found', 404);
+    }
+
+    /**
+     * Serve the gzipped sitemap index from disk. Only available when the
+     * static cache is enabled and a .gz copy of the index exists; otherwise a
+     * 404 response is returned so consumers do not download stale or
+     * inconsistent files.
+     */
+    public function gz()
+    {
+        if (!GoogleSitemap::enabled() || !$this->staticCacheEnabled()) {
+            return new HTTPResponse('Page not found', 404);
+        }
+
+        $path = $this->getGenerator()->indexPath() . '.gz';
+
+        if (!file_exists($path)) {
+            return new HTTPResponse('Page not found', 404);
+        }
+
+        $response = $this->getResponse();
+        $response->addHeader('Content-Type', 'application/gzip');
+        $response->addHeader('Content-Encoding', 'gzip');
+        $response->addHeader('X-Robots-Tag', 'noindex');
+        $response->setBody((string) file_get_contents($path));
+
+        return $response;
     }
 
     /**
@@ -133,5 +191,18 @@ class GoogleSitemapController extends Controller
     public function AbsoluteLink($action = null)
     {
         return rtrim(Controller::join_links(Director::absoluteBaseURL(), 'sitemap.xml', $action), '/');
+    }
+
+    /**
+     * Whether the static cache should be consulted for this request.
+     */
+    protected function staticCacheEnabled(): bool
+    {
+        return (bool) Config::inst()->get(GoogleSitemap::class, 'enable_static_cache');
+    }
+
+    protected function getGenerator(): GoogleSitemapGenerator
+    {
+        return Injector::inst()->get(GoogleSitemapGenerator::class);
     }
 }

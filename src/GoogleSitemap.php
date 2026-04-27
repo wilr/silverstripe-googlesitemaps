@@ -74,6 +74,41 @@ class GoogleSitemap
     private static bool $exclude_redirector_pages = true;
 
     /**
+     * Serve the sitemap from a static .xml file written to disk by the
+     * background job rather than rendering it on every request. The static
+     * cache also enables responses to /sitemap.xml.gz.
+     *
+     * @config
+     */
+    private static bool $enable_static_cache = false;
+
+    /**
+     * Whether the generator should also write a .gz copy of every sitemap
+     * file. Requires zlib (gzopen/gzwrite) support; if unavailable the
+     * generator silently falls back to producing only .xml files.
+     *
+     * @config
+     */
+    private static bool $enable_gzip = true;
+
+    /**
+     * Filesystem path where the generated sitemap files are written. May be
+     * an absolute path or a path relative to the public web root. The directory
+     * will be created automatically if it does not exist.
+     *
+     * @config
+     */
+    private static string $static_cache_path = 'sitemaps';
+
+    /**
+     * Frequency in seconds at which the queued job re-schedules itself to
+     * regenerate the static sitemap files. Defaults to one hour.
+     *
+     * @config
+     */
+    private static int $regenerate_time = 3600;
+
+    /**
      * Decorates the given DataObject with {@link GoogleSitemapDecorator}
      * and pushes the class name to the registered DataObjects.
      * Note that all registered DataObjects need the method AbsoluteLink().

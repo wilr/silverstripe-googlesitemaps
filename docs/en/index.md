@@ -125,6 +125,96 @@ URLs to include.
     	'/Security/login/'
     ));
 
+### Static caching and gzipped sitemaps
+
+Google's sitemap protocol recommends serving large sitemaps as gzip-compressed
+`.xml.gz` files rather than relying on transparent compression at the web
+server layer. This module supports both:
+
+-   Rendering the sitemap index and every sub-sitemap to disk on a schedule.
+-   Serving the cached `.xml` files for `/sitemap.xml` and the
+    `/sitemap.xml/sitemap/$ClassName/$Page.xml` URLs.
+-   Serving a gzipped `/sitemap.xml.gz` endpoint built from the same render.
+
+Enable the cache in YAML:
+
+```yml
+---
+Name: customgooglesitemaps
+After: googlesitemaps
+---
+Wilr\GoogleSitemaps\GoogleSitemap:
+  enable_static_cache: true
+  enable_gzip: true
+  static_cache_path: 'sitemaps'
+  regenerate_time: 3600
+```
+
+Configuration reference:
+
+| Option                | Default        | Description                                                                                                                            |
+| --------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `enable_static_cache` | `false`        | When `true`, the controller serves files from `static_cache_path` instead of rendering on every request, and `/sitemap.xml.gz` becomes available. |
+| `enable_gzip`         | `true`         | Also write `.gz` copies of every sitemap file. Silently disabled if PHP lacks zlib (`gzopen`/`gzwrite`).                                |
+| `static_cache_path`   | `sitemaps`     | Filesystem location for the generated files. Relative paths are resolved against the public web root. Absolute paths are used as-is.   |
+| `regenerate_time`     | `3600`         | Seconds between scheduled regenerations when using the queued job.                                                                     |
+
+#### Generating the cache
+
+There are three supported ways to refresh the cache.
+
+##### Manual / cron via the build task
+
+```
+sake dev:tasks:GenerateGoogleSitemapTask
+```
+
+This is the simplest option — wire it up in cron at whatever cadence suits
+your site:
+
+```
+0 * * * * /path/to/silverstripe/vendor/bin/sake dev:tasks:GenerateGoogleSitemapTask
+```
+
+##### Hourly background job
+
+When [silverstripe/queuedjobs](https://github.com/symbiote/silverstripe-queuedjobs)
+is installed, the bundled `Wilr\GoogleSitemaps\Jobs\GenerateGoogleSitemapJob`
+class can be queued. After it finishes it re-queues itself to run again
+`regenerate_time` seconds later (default: 1 hour). Queue an initial run from
+your `_config.php` or via a one-off script:
+
+```php
+use Symbiote\QueuedJobs\Services\QueuedJobService;
+use Wilr\GoogleSitemaps\Jobs\GenerateGoogleSitemapJob;
+
+singleton(QueuedJobService::class)->queueJob(new GenerateGoogleSitemapJob());
+```
+
+The job uses a fixed signature so only one instance is queued at any given
+time — re-queueing is safe and idempotent.
+
+##### Programmatically
+
+```php
+use SilverStripe\Core\Injector\Injector;
+use Wilr\GoogleSitemaps\GoogleSitemapGenerator;
+
+Injector::inst()->get(GoogleSitemapGenerator::class)->generate();
+```
+
+#### Notes on serving
+
+-   Requests to `/sitemap.xml` and `/sitemap.xml/sitemap/...` always go through
+    the controller — caching is transparent. If a cache miss occurs (for
+    example, on first deploy before the job has run) the controller falls back
+    to rendering the response on demand.
+-   `/sitemap.xml.gz` is only available while `enable_static_cache` is `true`
+    and the gzipped file exists on disk; otherwise the controller returns a
+    404 to avoid serving inconsistent data.
+-   The cache directory must be writable by the web/job process. Files are
+    created with mode `0775` if missing.
+
 ### Sitemapable
 
 For automatic registration of a DataObject subclass, implement the `Sitemapable`
