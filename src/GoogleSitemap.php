@@ -267,12 +267,33 @@ class GoogleSitemap
      * can include pages from the website, dataobjects (such as forum posts)
      * as well as custom registered paths.
      *
-     * @param string
-     * @param int
+     * The optional `$locale` parameter is forwarded to the `withLocale`
+     * extension hook so localisation modules (eg. Fluent) can wrap the entire
+     * fetch in their own state, ensuring SQL-level locale filtering rather
+     * than post-processing.
+     *
+     * @param string $class
+     * @param int $page
+     * @param string|null $locale
      *
      * @return ArrayList
      */
-    public function getItems($class, $page = 1)
+    public function getItems($class, $page = 1, $locale = null)
+    {
+        if ($locale) {
+            return $this->inLocale($locale, fn () => $this->fetchItems($class, $page));
+        }
+
+        return $this->fetchItems($class, $page);
+    }
+
+    /**
+     * Internal worker that performs the actual list construction. Split from
+     * {@link getItems()} so the locale switching can wrap the whole thing.
+     *
+     * @return ArrayList
+     */
+    protected function fetchItems($class, $page = 1)
     {
         $page = (int) $page;
 
@@ -479,6 +500,11 @@ class GoogleSitemap
             }
         }
 
+        // Allow extensions (eg FluentSitemapExtension) to expand the list —
+        // typically by cloning each entry once per locale and tagging them
+        // with a `Locale` field consumed by the index template.
+        $this->extend('updateGoogleSitemaps', $sitemaps);
+
         return $sitemaps;
     }
 
@@ -522,6 +548,32 @@ class GoogleSitemap
     protected function sanitiseClassName($class)
     {
         return str_replace('\\', '-', (string) $class);
+    }
+
+    /**
+     * Run a callback inside a locale-specific context. By default the locale
+     * is ignored and the callback runs unchanged; localisation modules attach
+     * to the `withLocale` extension hook to wrap the callback in their own
+     * state machinery (eg. `FluentState::withState()`).
+     *
+     * Extensions implement the hook with the signature:
+     *
+     *   public function withLocale(string $locale, callable $callback, &$result, bool &$handled): void
+     *
+     * Setting `$handled = true` and assigning to `$result` short-circuits the
+     * default behaviour and uses the extension's return value.
+     */
+    public function inLocale(?string $locale, callable $callback)
+    {
+        if (!$locale) {
+            return $callback();
+        }
+
+        $result = null;
+        $handled = false;
+        $this->extend('withLocale', $locale, $callback, $result, $handled);
+
+        return $handled ? $result : $callback();
     }
 
     /**

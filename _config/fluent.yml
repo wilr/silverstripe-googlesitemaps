@@ -1,0 +1,12 @@
+---
+Name: googlesitemaps-fluent
+After:
+  - googlesitemaps
+Only:
+  classexists:
+    - TractorCow\Fluent\Model\Locale
+    - TractorCow\Fluent\State\FluentState
+---
+Wilr\GoogleSitemaps\GoogleSitemap:
+  extensions:
+    - Wilr\GoogleSitemaps\Extensions\FluentSitemapExtension

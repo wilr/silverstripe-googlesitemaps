@@ -67,6 +67,20 @@ running PHP build does not have zlib support.
 
 See `docs/en/index.md` for the full configuration reference.
 
+## Multi-language sites (Fluent)
+
+If `tractorcow/silverstripe-fluent` is installed the module automatically
+expands the sitemap index so every (class, page) entry is emitted once per
+configured locale, with URLs like
+`/sitemap.xml/sitemap/<ClassName>/<Page>/<Locale>` — the structure recommended
+by the [sitemaps protocol](https://www.sitemaps.org/protocol.html) for
+multi-language sites. Each sub-sitemap renders inside a `FluentState::withState()`
+block so locale filtering happens in SQL.
+
+The integration is purely additive (`Only: classexists` guarded) so installs
+without Fluent are unaffected. See `docs/en/index.md` for how to opt out and
+the available extension hooks.
+
 ## Usage Overview
 
 See docs/en for more information about configuring the module.

@@ -241,6 +241,53 @@ Injector::inst()->get(GoogleSitemapGenerator::class)->generate();
 -   The cache directory must be writable by the web/job process. Files are
     created with mode `0775` if missing.
 
+### Multi-language sites (Fluent integration)
+
+When [tractorcow/silverstripe-fluent](https://github.com/tractorcow-farm/silverstripe-fluent)
+is installed, the bundled `Wilr\GoogleSitemaps\Extensions\FluentSitemapExtension`
+auto-attaches and expands the sitemap index so every (class, page) entry is
+emitted once per configured locale, with a URL like:
+
+    /sitemap.xml/sitemap/<ClassName>/<Page>/<Locale>
+
+This is the multi-sitemap structure Google's documentation recommends for
+multi-language sites — see [the sitemaps protocol](https://www.sitemaps.org/protocol.html)
+and the discussion at [Webmasters Stack Exchange](https://webmasters.stackexchange.com/questions/74118/is-a-different-sitemap-per-language-ok-how-do-i-tell-google-about-them).
+
+Each per-locale sub-sitemap is rendered with `FluentState::withState()`
+wrapped around the underlying ORM query, so locale filtering happens in SQL
+rather than as a post-process — pagination counts stay accurate and rows from
+other locales never leak in.
+
+The wiring is automatic via the `_config/fluent.yml` file shipped with this
+module and gated on `Only: classexists` so installs without Fluent are
+unaffected. If you'd rather opt out (eg. you want a single combined sitemap),
+remove the extension in your own YAML:
+
+```yml
+---
+Name: app-googlesitemaps-fluent
+After: googlesitemaps-fluent
+---
+Wilr\GoogleSitemaps\GoogleSitemap:
+  extensions:
+    - 'Wilr\GoogleSitemaps\Extensions\FluentSitemapExtension': false
+```
+
+#### Extension hooks
+
+Two hooks make per-locale behaviour easy to extend or replicate for other
+localisation modules:
+
+- `updateGoogleSitemaps($sitemaps)` — called from `GoogleSitemap::getSitemaps()`
+  after the standard list is built. Mutate the passed `ArrayList` in place to
+  add/remove/expand entries (each entry can carry a `Locale` field that the
+  index template renders into the URL).
+- `withLocale(string $locale, callable $callback, &$result, &$handled)` —
+  called from `GoogleSitemap::inLocale()` whenever `getItems()` is invoked
+  with a locale code. Set `$handled = true` and assign to `$result` to
+  short-circuit the default fetch with your localisation module's state.
+
 ### Sitemapable
 
 For automatic registration of a DataObject subclass, implement the `Sitemapable`

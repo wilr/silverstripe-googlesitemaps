@@ -1,0 +1,19 @@
+TractorCow\Fluent\Model\Locale:
+  EnNZ:
+    Title: 'English (New Zealand)'
+    Locale: 'en_NZ'
+    URLSegment: 'en'
+    IsGlobalDefault: 1
+    Sort: 1
+  FrFR:
+    Title: 'Français (France)'
+    Locale: 'fr_FR'
+    URLSegment: 'fr'
+    IsGlobalDefault: 0
+    Sort: 2
+
+Wilr\GoogleSitemaps\Tests\Model\TestDataObject:
+  Object1:
+    Priority: 0.4
+  Object2:
+    Priority: 0.4

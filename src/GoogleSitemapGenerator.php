@@ -51,24 +51,25 @@ class GoogleSitemapGenerator
 
         // Render and write each sub-sitemap. We write these first so a partial
         // failure does not leave behind a stale index file pointing at missing
-        // children.
+        // children. The list already includes any per-locale entries injected
+        // by the FluentSitemapExtension via the `updateGoogleSitemaps` hook.
         $sitemaps = $sitemap->getSitemaps();
-        $sitemap->extend('updateGoogleSitemaps', $sitemaps);
 
         foreach ($sitemaps as $entry) {
             $className = $entry->ClassName;
             $page = (int) $entry->Page;
+            $locale = $entry->Locale ?: null;
             $unsanitised = str_replace('-', '\\', (string) $className);
 
-            $items = $sitemap->getItems($unsanitised, $page);
-            $sitemap->extend('updateGoogleSitemapItems', $items, $unsanitised, $page);
+            $items = $sitemap->getItems($unsanitised, $page, $locale);
+            $sitemap->extend('updateGoogleSitemapItems', $items, $unsanitised, $page, $locale);
 
             $body = (string) $controller->customise(new ArrayData([
                 'Items' => $items,
             ]))->renderWith('Wilr\\GoogleSitemaps\\Control\\GoogleSitemapController_sitemap');
 
             $this->writeFile(
-                $directory . DIRECTORY_SEPARATOR . $this->subSitemapFileName($className, $page),
+                $directory . DIRECTORY_SEPARATOR . $this->subSitemapFileName($className, $page, $locale),
                 $body
             );
         }
@@ -88,10 +89,17 @@ class GoogleSitemapGenerator
     }
 
     /**
-     * Resolve the absolute path of a sub sitemap file within the cache.
+     * Resolve the relative file name for a sub sitemap within the cache. The
+     * optional `$locale` is appended so per-locale variants do not clobber
+     * each other on disk; the URL served by the controller mirrors this
+     * structure exactly so the cached file is the right one to return.
      */
-    public function subSitemapFileName(string $className, int $page): string
+    public function subSitemapFileName(string $className, int $page, ?string $locale = null): string
     {
+        if ($locale) {
+            return sprintf('sitemap-%s-%d-%s.xml', $className, $page, $locale);
+        }
+
         return sprintf('sitemap-%s-%d.xml', $className, $page);
     }
 

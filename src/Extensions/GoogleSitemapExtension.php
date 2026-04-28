@@ -21,7 +21,7 @@ class GoogleSitemapExtension extends Extension
     {
         $can = true;
 
-        if ($this->owner->hasMethod('AbsoluteLink')) {
+        if ($this->owner->hasMethod('AbsoluteLink') && $this->owner->config()->get('validate_host_matching')) {
             $hostHttp = parse_url(Director::protocolAndHost(), PHP_URL_HOST);
 
             // Subsite support
