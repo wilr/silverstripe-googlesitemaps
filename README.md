@@ -1,6 +1,6 @@
 # Google Sitemaps Module
 
-[![Build Status](http://img.shields.io/travis/wilr/silverstripe-googlesitemaps.svg?style=flat-square)](http://travis-ci.org/wilr/silverstripe-googlesitemaps)
+[![CI](https://github.com/wilr/silverstripe-googlesitemaps/actions/workflows/ci.yml/badge.svg)](https://github.com/wilr/silverstripe-googlesitemaps/actions/workflows/ci.yml)
 [![Version](http://img.shields.io/packagist/v/wilr/silverstripe-googlesitemaps.svg?style=flat-square)](https://packagist.org/packages/wilr/silverstripe-googlesitemaps)
 [![License](http://img.shields.io/packagist/l/wilr/silverstripe-googlesitemaps.svg?style=flat-square)](LICENSE.md)
 
