@@ -11,6 +11,7 @@ use SilverStripe\Core\Injector\Injector;
 use Wilr\GoogleSitemaps\GoogleSitemap;
 use Wilr\GoogleSitemaps\GoogleSitemapGenerator;
 use SilverStripe\Model\ArrayData;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 
 /**
  * Controller for displaying the sitemap.xml. The module displays an index
@@ -33,7 +34,7 @@ use SilverStripe\Model\ArrayData;
 class GoogleSitemapController extends Controller
 {
     /**
-     * @var array
+     * @var list<string>
      */
     private static $allowed_actions = [
         'index',
@@ -47,7 +48,7 @@ class GoogleSitemapController extends Controller
      * segment in addition to the default `$ID/$OtherID`. Used by the Fluent
      * integration to serve per-locale sub-sitemaps.
      *
-     * @var array
+     * @var array<string, string>
      */
     private static $url_handlers = [
         'sitemap/$ID/$OtherID/$ThirdID' => 'sitemap',
@@ -65,7 +66,7 @@ class GoogleSitemapController extends Controller
      *
      * @return mixed
      */
-    public function index($url)
+    public function index(mixed $url = null)
     {
         if (!GoogleSitemap::enabled()) {
             return new HTTPResponse('Page not found', 404);
@@ -103,15 +104,9 @@ class GoogleSitemapController extends Controller
      */
     public function sitemap()
     {
-        $class = $this->unsanitiseClassName($this->request->param('ID'));
+        $class = $this->unsanitiseClassName((string) $this->request->param('ID'));
         $page = intval($this->request->param('OtherID'));
         $locale = $this->request->param('ThirdID') ?: null;
-
-        if ($page) {
-            if (!is_numeric($page)) {
-                return new HTTPResponse('Page not found', 404);
-            }
-        }
 
         if (
             GoogleSitemap::enabled()
@@ -152,8 +147,7 @@ class GoogleSitemapController extends Controller
      */
     protected function isGzipRequest(): bool
     {
-        return $this->getRequest()
-            && strtolower((string) $this->getRequest()->getExtension()) === 'gz';
+        return strtolower((string) $this->getRequest()->getExtension()) === 'gz';
     }
 
     /**
@@ -187,17 +181,15 @@ class GoogleSitemapController extends Controller
      * Unsanitise a namespaced class' name from a URL param
      * @return string
      */
-    protected function unsanitiseClassName($class)
+    protected function unsanitiseClassName(string $class)
     {
         return str_replace('-', '\\', (string) $class);
     }
 
     /**
      * Render the stylesheet for the sitemap index
-     *
-     * @return DBHTMLText
      */
-    public function styleSheetIndex()
+    public function styleSheetIndex(): DBHTMLText
     {
         $html = $this->renderWith('xml-sitemapindex');
         $this->getResponse()->addHeader('Content-Type', 'text/xsl; charset="utf-8"');
@@ -207,10 +199,8 @@ class GoogleSitemapController extends Controller
 
     /**
      * Render the stylesheet for the sitemap
-     *
-     * @return DBHTMLText
      */
-    public function styleSheet()
+    public function styleSheet(): DBHTMLText
     {
         $html = $this->renderWith('xml-sitemap');
         $this->getResponse()->addHeader('Content-Type', 'text/xsl; charset="utf-8"');

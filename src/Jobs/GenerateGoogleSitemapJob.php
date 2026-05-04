@@ -32,12 +32,12 @@ if (!class_exists(AbstractQueuedJob::class)) {
  */
 class GenerateGoogleSitemapJob extends AbstractQueuedJob implements QueuedJob
 {
-    public function getTitle()
+    public function getTitle(): string
     {
-        return _t(__CLASS__ . '.TITLE', 'Regenerate Google sitemap files');
+        return _t(GenerateGoogleSitemapJob::class . '.TITLE', 'Regenerate Google sitemap files');
     }
 
-    public function getJobType()
+    public function getJobType(): string
     {
         $this->totalSteps = 1;
         return QueuedJob::QUEUED;
@@ -46,19 +46,19 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob implements QueuedJob
     /**
      * Only allow a single instance of this job to be queued at a time.
      */
-    public function getSignature()
+    public function getSignature(): string
     {
-        return md5(self::class);
+        return md5(GenerateGoogleSitemapJob::class);
     }
 
-    public function setup()
+    public function setup(): void
     {
         parent::setup();
         $this->totalSteps = 1;
         $this->currentStep = 0;
     }
 
-    public function process()
+    public function process(): void
     {
         $generator = Injector::inst()->get(GoogleSitemapGenerator::class);
         $indexPath = $generator->generate();
@@ -86,7 +86,7 @@ class GenerateGoogleSitemapJob extends AbstractQueuedJob implements QueuedJob
             return;
         }
 
-        $next = new self();
+        $next = new GenerateGoogleSitemapJob();
 
         Injector::inst()->get(QueuedJobService::class)->queueJob(
             $next,

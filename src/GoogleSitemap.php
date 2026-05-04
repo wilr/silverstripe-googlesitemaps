@@ -6,7 +6,9 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\ModelData;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\Model\ArrayData;
 use SilverStripe\Core\Extensible;
@@ -54,7 +56,12 @@ class GoogleSitemap
      * List of {@link DataObject} class names to include. As well as the change
      * frequency and priority of each class.
      *
-     * @var array
+     * @var array<string, array{
+     *     frequency: string,
+     *     priority: string,
+     *     filters: array<string, mixed>,
+     *     exclude: array<string, mixed>
+     * }>
      */
     private static array $dataobjects = [];
 
@@ -62,7 +69,7 @@ class GoogleSitemap
      * List of custom routes to include in the sitemap (such as controller
      * subclasses) as well as the change frequency and priority.
      *
-     * @var array
+     * @var array<string, array{frequency: string, priority: string}>
      */
     private static array $routes = [];
 
@@ -140,7 +147,7 @@ class GoogleSitemap
         string $priority = '0.6',
         array $filters = [],
         array $exclude = []
-    ) {
+    ): void {
         if (!GoogleSitemap::is_registered($class)) {
             $class::add_extension(GoogleSitemapExtension::class);
 
@@ -172,7 +179,7 @@ class GoogleSitemap
         string $priority = '0.6',
         array $filters = [],
         array $exclude = []
-    ) {
+    ): void {
         foreach ($classes as $class) {
             GoogleSitemap::register_dataobject($class, $frequency, $priority, $filters, $exclude);
         }
@@ -185,7 +192,7 @@ class GoogleSitemap
      *
      * @return bool
      */
-    public static function is_registered($className)
+    public static function is_registered(string $className): bool
     {
         if (!isset(GoogleSitemap::$dataobjects[$className])) {
             $lowerKeys = array_change_key_case(GoogleSitemap::$dataobjects);
@@ -198,10 +205,8 @@ class GoogleSitemap
 
     /**
      * Unregisters a class from the sitemap. Mostly used for the test suite
-     *
-     * @param string
      */
-    public static function unregister_dataobject($className)
+    public static function unregister_dataobject(string $className): void
     {
         unset(GoogleSitemap::$dataobjects[$className]);
     }
@@ -218,14 +223,8 @@ class GoogleSitemap
 
     /**
      * Register a given route to the sitemap list
-     *
-     * @param string
-     * @param string
-     * @param string
-     *
-     * @return void
      */
-    public static function register_route($route, $changeFreq = 'monthly', $priority = '0.6')
+    public static function register_route(string $route, string $changeFreq = 'monthly', string $priority = '0.6'): void
     {
         GoogleSitemap::$routes = array_merge(GoogleSitemap::$routes, [
             $route => [
@@ -239,14 +238,13 @@ class GoogleSitemap
      * Registers a given list of relative urls. Will be merged with the current
      * registered routes. If you want to replace them, please call {@link clear_routes}
      *
-     * @param array
-     * @param string
-     * @param string
-     *
-     * @return void
+     * @param array<int, string> $routes
      */
-    public static function register_routes($routes, $changeFreq = 'monthly', $priority = '0.6')
-    {
+    public static function register_routes(
+        array $routes,
+        string $changeFreq = 'monthly',
+        string $priority = '0.6'
+    ): void {
         foreach ($routes as $route) {
             GoogleSitemap::register_route($route, $changeFreq, $priority);
         }
@@ -276,9 +274,9 @@ class GoogleSitemap
      * @param int $page
      * @param string|null $locale
      *
-     * @return ArrayList
+     * @return ArrayList<ModelData>
      */
-    public function getItems($class, $page = 1, $locale = null)
+    public function getItems(string $class, int $page = 1, ?string $locale = null): ArrayList
     {
         if ($locale) {
             return $this->inLocale($locale, fn () => $this->fetchItems($class, $page));
@@ -291,18 +289,20 @@ class GoogleSitemap
      * Internal worker that performs the actual list construction. Split from
      * {@link getItems()} so the locale switching can wrap the whole thing.
      *
-     * @return ArrayList
+     * @return ArrayList<ModelData>
      */
-    protected function fetchItems($class, $page = 1)
+    protected function fetchItems(string $class, int $page = 1): ArrayList
     {
         $page = (int) $page;
 
-        try {
-            $reflectionClass = new ReflectionClass($class);
-            $class = $reflectionClass->getName();
-        } catch (ReflectionException $e) {
-            // this can happen when $class is GoogleSitemapRoute
-            //we should try to carry on
+        if ($class !== 'GoogleSitemapRoute' && class_exists($class)) {
+            try {
+                $reflectionClass = new ReflectionClass($class);
+                $class = $reflectionClass->getName();
+            } catch (ReflectionException $e) {
+                // this can happen when $class is GoogleSitemapRoute
+                //we should try to carry on
+            }
         }
 
         $output = new ArrayList();
@@ -312,8 +312,8 @@ class GoogleSitemap
 
         // todo migrate to extension hook or DI point for other modules to
         // modify state filters
-        if (class_exists('Translatable')) {
-            Translatable::disable_locale_filter();
+        if (class_exists(\Translatable::class)) {
+            \Translatable::disable_locale_filter();
         }
 
         if ($class == 'SilverStripe\CMS\Model\SiteTree') {
@@ -344,6 +344,10 @@ class GoogleSitemap
 
             return $output;
         } else {
+            if (!class_exists($class) || !is_subclass_of($class, DataObject::class, true)) {
+                return $output;
+            }
+
             $instances = new DataList($class);
             $instances = GoogleSitemap::applyRegisteredFilters($instances, $class);
         }
@@ -369,13 +373,10 @@ class GoogleSitemap
     /**
      * Static interface to instance level ->getItems() for backward compatibility.
      *
-     * @param string
-     * @param int
-     *
-     * @return ArrayList
+     * @return ArrayList<ModelData>
      * @deprecated Please create an instance and call ->getSitemaps() instead.
      */
-    public static function get_items($class, $page = 1)
+    public static function get_items(string $class, int $page = 1): ArrayList
     {
         return static::inst()->getItems($class, $page);
     }
@@ -386,12 +387,8 @@ class GoogleSitemap
      *
      * Frequency for {@link SiteTree} objects can be determined from the version
      * history.
-     *
-     * @param string
-     *
-     * @return string
      */
-    public static function get_frequency_for_class($class)
+    public static function get_frequency_for_class(string $class): string
     {
         foreach (GoogleSitemap::$dataobjects as $type => $config) {
             if ($class == $type) {
@@ -404,16 +401,12 @@ class GoogleSitemap
 
     /**
      * Returns the default priority of edits for a particular dataobject class.
-     *
-     * @param string
-     *
-     * @return float
      */
-    public static function get_priority_for_class($class)
+    public static function get_priority_for_class(string $class): float
     {
         foreach (GoogleSitemap::$dataobjects as $type => $config) {
             if ($class == $type) {
-                return $config['priority'];
+                return (float) $config['priority'];
             }
         }
 
@@ -425,9 +418,9 @@ class GoogleSitemap
      * prevent overbearing a server. By default separate {@link DataObject}
      * records are keep in separate files and broken down into chunks.
      *
-     * @return ArrayList
+     * @return ArrayList<ModelData>
      */
-    public function getSitemaps()
+    public function getSitemaps(): ArrayList
     {
         $countPerFile = Config::inst()->get(__CLASS__, 'objects_per_sitemap');
         $sitemaps = new ArrayList();
@@ -436,8 +429,8 @@ class GoogleSitemap
         if (class_exists('SilverStripe\CMS\Model\SiteTree')) {
             // move to extension hook. At the moment moduleexists config hook
             // does not work.
-            if (class_exists('Translatable')) {
-                Translatable::disable_locale_filter();
+            if (class_exists(\Translatable::class)) {
+                \Translatable::disable_locale_filter();
             }
 
             $filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
@@ -466,6 +459,10 @@ class GoogleSitemap
 
         if (count(GoogleSitemap::$dataobjects) > 0) {
             foreach (GoogleSitemap::$dataobjects as $class => $config) {
+                if (!class_exists($class) || !is_subclass_of($class, DataObject::class, true)) {
+                    continue;
+                }
+
                 $list = new DataList($class);
                 $list = GoogleSitemap::applyRegisteredFilters($list, $class);
                 $list = $list->sort('LastEdited ASC');
@@ -511,10 +508,10 @@ class GoogleSitemap
     /**
      * Static interface to instance level ->getSitemaps() for backward compatibility.
      *
-     * @return ArrayList
+     * @return ArrayList<ModelData>
      * @deprecated Please create an instance and call ->getSitemaps() instead.
      */
-    public static function get_sitemaps()
+    public static function get_sitemaps(): ArrayList
     {
         return static::inst()->getSitemaps();
     }
@@ -524,9 +521,9 @@ class GoogleSitemap
      *
      * @return boolean
      */
-    public static function enabled()
+    public static function enabled(): bool
     {
-        return (Config::inst()->get(__CLASS__, 'enabled'));
+        return (bool) Config::inst()->get(__CLASS__, 'enabled');
     }
 
 
@@ -543,11 +540,10 @@ class GoogleSitemap
 
     /**
      * Sanitise a namespaced class' name for inclusion in a link
-     * @return string
      */
-    protected function sanitiseClassName($class)
+    protected function sanitiseClassName(string $class): string
     {
-        return str_replace('\\', '-', (string) $class);
+        return str_replace('\\', '-', $class);
     }
 
     /**
@@ -563,7 +559,7 @@ class GoogleSitemap
      * Setting `$handled = true` and assigning to `$result` short-circuits the
      * default behaviour and uses the extension's return value.
      */
-    public function inLocale(?string $locale, callable $callback)
+    public function inLocale(?string $locale, callable $callback): mixed
     {
         if (!$locale) {
             return $callback();
@@ -584,7 +580,8 @@ class GoogleSitemap
      * which is what produces the empty sitemap files seen with strict
      * `canView` overrides.
      *
-     * @return DataList
+     * @param DataList<DataObject> $list
+     * @return DataList<DataObject>
      */
     public static function applyRegisteredFilters(DataList $list, string $class): DataList
     {
@@ -594,11 +591,11 @@ class GoogleSitemap
 
         $config = GoogleSitemap::$dataobjects[$class];
 
-        if (!empty($config['filters']) && is_array($config['filters'])) {
+        if (!empty($config['filters'])) {
             $list = $list->filter($config['filters']);
         }
 
-        if (!empty($config['exclude']) && is_array($config['exclude'])) {
+        if (!empty($config['exclude'])) {
             $list = $list->exclude($config['exclude']);
         }
 

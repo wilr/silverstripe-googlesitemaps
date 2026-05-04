@@ -56,9 +56,14 @@ class GoogleSitemapGenerator
         $sitemaps = $sitemap->getSitemaps();
 
         foreach ($sitemaps as $entry) {
-            $className = $entry->ClassName;
-            $page = (int) $entry->Page;
-            $locale = $entry->Locale ?: null;
+            if (!$entry instanceof ArrayData) {
+                continue;
+            }
+
+            $className = $entry->getField('ClassName');
+            $page = (int) $entry->getField('Page');
+            $localeField = $entry->getField('Locale');
+            $locale = $localeField ? (string) $localeField : null;
             $unsanitised = str_replace('-', '\\', (string) $className);
 
             $items = $sitemap->getItems($unsanitised, $page, $locale);
@@ -126,9 +131,7 @@ class GoogleSitemapGenerator
             return rtrim($configured, DIRECTORY_SEPARATOR);
         }
 
-        $base = method_exists(Director::class, 'publicFolder')
-            ? Director::publicFolder()
-            : Director::baseFolder();
+        $base = Director::publicFolder();
 
         return rtrim($base, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . trim($configured, DIRECTORY_SEPARATOR);
     }
@@ -151,7 +154,7 @@ class GoogleSitemapGenerator
             return false;
         }
 
-        return self::gzipSupported();
+        return GoogleSitemapGenerator::gzipSupported();
     }
 
     /**

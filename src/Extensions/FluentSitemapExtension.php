@@ -7,6 +7,7 @@ use SilverStripe\Model\ArrayData;
 use SilverStripe\Model\List\ArrayList;
 use TractorCow\Fluent\Model\Locale;
 use TractorCow\Fluent\State\FluentState;
+use Wilr\GoogleSitemaps\GoogleSitemap;
 
 /**
  * Optional extension that integrates {@link GoogleSitemap} with
@@ -24,6 +25,8 @@ use TractorCow\Fluent\State\FluentState;
  * actually installed; in addition every method here defensively re-checks
  * `class_exists()` so the file is harmless if it ends up loaded without the
  * package present (eg. via class manifest scans).
+ *
+ * @extends Extension<GoogleSitemap>
  */
 class FluentSitemapExtension extends Extension
 {
@@ -31,14 +34,12 @@ class FluentSitemapExtension extends Extension
      * Hook invoked from {@link GoogleSitemap::getSitemaps()}. Replaces every
      * entry in `$sitemaps` with one entry per configured locale, tagging each
      * with a `Locale` field consumed by the index template.
+     *
+     * @param ArrayList<ArrayData> $sitemaps
      */
-    public function updateGoogleSitemaps($sitemaps): void
+    public function updateGoogleSitemaps(ArrayList $sitemaps): void
     {
-        if (!self::fluentAvailable()) {
-            return;
-        }
-
-        if (!$sitemaps instanceof ArrayList) {
+        if (!FluentSitemapExtension::fluentAvailable()) {
             return;
         }
 
@@ -46,7 +47,7 @@ class FluentSitemapExtension extends Extension
 
         // Without configured locales there is nothing to expand into; leave
         // the standard index untouched.
-        if (!$locales || !$locales->count()) {
+        if (!$locales->count()) {
             return;
         }
 
@@ -66,9 +67,9 @@ class FluentSitemapExtension extends Extension
         foreach ($original as $entry) {
             foreach ($locales as $locale) {
                 $clone = new ArrayData([
-                    'ClassName' => $entry->ClassName,
-                    'Page' => $entry->Page,
-                    'LastModified' => $entry->LastModified,
+                    'ClassName' => $entry->getField('ClassName'),
+                    'Page' => $entry->getField('Page'),
+                    'LastModified' => $entry->getField('LastModified'),
                     'Locale' => $locale->Locale,
                 ]);
 
@@ -89,7 +90,7 @@ class FluentSitemapExtension extends Extension
      */
     public function withLocale(string $locale, callable $callback, &$result, &$handled): void
     {
-        if (!self::fluentAvailable()) {
+        if (!FluentSitemapExtension::fluentAvailable()) {
             return;
         }
 

@@ -2,8 +2,10 @@
 
 namespace Wilr\GoogleSitemaps\Extensions;
 
+use ReflectionMethod;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Extension;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\Subsites\Model\Subsite;
 use Wilr\GoogleSitemaps\GoogleSitemap;
@@ -11,28 +13,33 @@ use Wilr\GoogleSitemaps\GoogleSitemap;
 /**
  * Decorate the page object to provide google sitemaps with additional options
  * and configuration.
+ *
+ * @extends Extension<DataObject>
  */
 class GoogleSitemapExtension extends Extension
 {
     /**
-     * @return boolean
+     * @return bool|mixed
      */
     public function canIncludeInGoogleSitemap()
     {
         $can = true;
 
         if ($this->owner->hasMethod('AbsoluteLink') && $this->owner->config()->get('validate_host_matching')) {
-            $hostHttp = parse_url(Director::protocolAndHost(), PHP_URL_HOST);
+            $hostHttp = GoogleSitemapExtension::parseUrlHost((string) Director::protocolAndHost());
 
             // Subsite support
             if (class_exists(Subsite::class)) {
                 // Subsite will have a different domain from Director::protocolAndHost
                 if ($subsite = Subsite::currentSubsite()) {
-                    $hostHttp = parse_url(Director::protocol() . $subsite->getPrimaryDomain(), PHP_URL_HOST);
+                    $hostHttp = GoogleSitemapExtension::parseUrlHost(
+                        (string) Director::protocol() . (string) $subsite->getPrimaryDomain()
+                    );
                 }
             }
 
-            $objHttp = parse_url($this->owner->AbsoluteLink() ?? '', PHP_URL_HOST);
+            $absoluteLink = (new ReflectionMethod($this->owner, 'AbsoluteLink'))->invoke($this->owner);
+            $objHttp = GoogleSitemapExtension::parseUrlHost(is_string($absoluteLink) ? $absoluteLink : '');
 
             if ($objHttp != $hostHttp) {
                 $can = false;
@@ -44,25 +51,20 @@ class GoogleSitemapExtension extends Extension
         }
 
         if ($can) {
-            $can = ($this->owner->getGooglePriority() !== false);
+            $can = ($this->getGooglePriority() !== false);
         }
 
         if ($can === false) {
             return false;
         }
 
-        // Allow override. invokeWithExtensions will either return a single result (true|false) if defined on the object
-        // or an array if on extensions.
+        // invokeWithExtensions merges owner + extension hook results into a non-empty array shape.
         $override = $this->owner->invokeWithExtensions('alterCanIncludeInGoogleSitemap', $can);
 
-        if ($override !== null) {
-            if (is_array($override)) {
-                if (!empty($override)) {
-                    $can = min($override, $can);
-                }
-            } else {
-                $can = $override;
-            }
+        if ($override !== []) {
+            $merged = array_values($override);
+            $merged[] = $can;
+            $can = min($merged);
         }
 
         if (is_array($can) && isset($can[0])) {
@@ -97,10 +99,8 @@ class GoogleSitemapExtension extends Extension
      * or never as values.
      *
      * @see http://support.google.com/webmasters/bin/answer.py?hl=en&answer=183668&topic=8476&ctx=topic
-     *
-     * @return DBDatetime
      */
-    public function getChangeFrequency()
+    public function getChangeFrequency(): string
     {
         if ($freq = GoogleSitemap::get_frequency_for_class($this->owner->ClassName)) {
             return $freq;
@@ -109,22 +109,20 @@ class GoogleSitemapExtension extends Extension
         $date = date('Y-m-d H:i:s');
 
         $created = new DBDatetime();
-        $created->value = ($this->owner->Created) ? $this->owner->Created : $date;
+        $created->setValue($this->owner->Created ?: $date);
 
         $now = new DBDatetime();
-        $now->value = $date;
+        $now->setValue($date);
 
-        $versions = ($this->owner->Version) ? $this->owner->Version : 1;
+        $versions = $this->owner->hasField('Version')
+            ? (int) $this->owner->getField('Version')
+            : 1;
 
-        if ($now && $created) {
-            $timediff = $now->getTimestamp() - $created->getTimestamp();
+        $timediff = $now->getTimestamp() - $created->getTimestamp();
 
-            // Check how many revisions have been made over the lifetime of the
-            // Page for a rough estimate of it's changing frequency.
-            $period = $timediff / ($versions + 1);
-        } else {
-            $period = 0;
-        }
+        // Check how many revisions have been made over the lifetime of the
+        // Page for a rough estimate of it's changing frequency.
+        $period = $timediff / ($versions + 1);
 
         if ($period > 60 * 60 * 24 * 365) {
             $freq = 'yearly';
@@ -141,5 +139,12 @@ class GoogleSitemapExtension extends Extension
         }
 
         return $freq;
+    }
+
+    private static function parseUrlHost(string $url): string
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+
+        return is_string($host) ? $host : '';
     }
 }

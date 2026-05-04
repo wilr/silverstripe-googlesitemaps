@@ -26,7 +26,9 @@
         "phpstan/extension-installer": "^1.3",
         "silverstripe/recipe-plugin": "^2",
         "silverstripe/cms": "^6.0",
-        "tractorcow/silverstripe-fluent": "^8"
+        "tractorcow/silverstripe-fluent": "^8",
+        "symbiote/silverstripe-queuedjobs": "^6",
+        "silverstripe/errorpage": "^3"
     },
     "replace": {
         "silverstripe/googlesitemaps": "*"
@@ -39,7 +41,7 @@
         ],
         "lint": "phpcs src/ tests/",
         "lint-clean": "phpcbf src/ tests/",
-        "phpstan": "phpstan analyse"
+        "phpstan": "phpstan analyse --memory-limit=512M"
     },
     "extra": {
         "branch-alias": {

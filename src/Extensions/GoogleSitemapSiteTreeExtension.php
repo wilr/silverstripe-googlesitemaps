@@ -3,6 +3,7 @@
 namespace Wilr\GoogleSitemaps\Extensions;
 
 use SilverStripe\Assets\Image;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\ErrorPage\ErrorPage;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
@@ -13,19 +14,29 @@ use Throwable;
 
 class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
 {
+    /**
+     * @var array<string, string>
+     */
     private static $db = [
         "Priority" => "Varchar(5)"
     ];
 
-
-    public function updateCMSFields(FieldList $fields)
+    public function updateCMSFields(FieldList $fields): void
     {
+        if ($this->getSiteTreeOwner() === null) {
+            return;
+        }
+
         $fields->removeByName('Priority');
     }
 
-
-    public function updateSettingsFields(&$fields)
+    public function updateSettingsFields(FieldList &$fields): void
     {
+        $tree = $this->getSiteTreeOwner();
+        if ($tree === null) {
+            return;
+        }
+
         $prorities = array(
             '-1' => _t('GoogleSitemaps.PRIORITYNOTINDEXED', "Not indexed"),
             '1.0' => '1 - ' . _t('GoogleSitemaps.PRIORITYMOSTIMPORTANT', "Most important"),
@@ -59,56 +70,71 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             LiteralField::create("GoogleSitemapIntro", $message),
             $priority = DropdownField::create(
                 "Priority",
-                $this->owner->fieldLabel('Priority'),
+                $tree->fieldLabel('Priority'),
                 $prorities,
-                $this->owner->Priority
+                $tree->getField('Priority')
             )
         ));
 
         $priority->setEmptyString(_t('GoogleSitemaps.PRIORITYAUTOSET', 'Auto-set based on page depth'));
     }
 
-    public function updateFieldLabels(&$labels)
+    /**
+     * @param array<string, string> $labels
+     */
+    public function updateFieldLabels(&$labels): void
     {
         $labels['Priority'] = _t('GoogleSitemaps.METAPAGEPRIO', "Page Priority");
     }
 
     /**
      * Ensure that all parent pages of this page (if any) are published
-     *
-     * @return boolean
      */
-    public function hasPublishedParent()
+    public function hasPublishedParent(): bool
     {
+        $tree = $this->getSiteTreeOwner();
+        if ($tree === null) {
+            return true;
+        }
 
         // Skip root pages
-        if (empty($this->owner->ParentID)) {
+        if (empty($tree->ParentID)) {
             return true;
         }
 
         // Ensure direct parent exists
-        $parent = $this->owner->Parent();
-        if (empty($parent) || !$parent->exists()) {
+        $parent = $tree->Parent();
+        if (!$parent->exists()) {
             return false;
         }
 
-        // Check ancestry
-        return $parent->hasPublishedParent();
+        // Check ancestry (extension method composed onto SiteTree)
+        if (!method_exists($parent, 'hasPublishedParent')) {
+            return true;
+        }
+
+        return (bool) call_user_func([$parent, 'hasPublishedParent']);
     }
 
     /**
-     * @return boolean
+     * @return bool|mixed
      */
     public function canIncludeInGoogleSitemap()
     {
+        $tree = $this->getSiteTreeOwner();
+        if ($tree === null) {
+            return parent::canIncludeInGoogleSitemap();
+        }
 
         // Check that parent page is published
-        if (!$this->owner->hasPublishedParent()) {
+        if (!$this->hasPublishedParent()) {
             return false;
         }
 
         $result = parent::canIncludeInGoogleSitemap();
-        $result = ($this->owner instanceof ErrorPage) ? false : $result;
+        if ($tree->getClassName() === ErrorPage::class) {
+            return false;
+        }
 
         if (is_array($result) && isset($result[0])) {
             return $result[0];
@@ -122,15 +148,20 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
      */
     public function getGooglePriority()
     {
+        $tree = $this->getSiteTreeOwner();
+        if ($tree === null) {
+            return parent::getGooglePriority();
+        }
+
         setlocale(LC_ALL, "en_US.UTF8");
-        $priority = $this->owner->getField('Priority');
+        $priority = $tree->getField('Priority');
 
         if (!$priority) {
-            $parentStack = $this->owner->getAncestors();
+            $parentStack = $tree->getAncestors();
             $numParents = $parentStack->count();
 
             $num = max(0.1, 1.0 - ($numParents / 10));
-            $result = str_replace(",", ".", $num);
+            $result = str_replace(",", ".", (string) $num);
 
             return $result;
         } elseif ($priority == -1) {
@@ -140,21 +171,33 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
         }
     }
 
-    public function ImagesForSitemap()
+    /**
+     * @return ArrayList<\SilverStripe\Assets\Image>
+     */
+    public function ImagesForSitemap(): ArrayList
     {
+        $tree = $this->getSiteTreeOwner();
+        if ($tree === null) {
+            return new ArrayList();
+        }
+
         $list = new ArrayList();
         $cachedImages = [];
 
-        foreach ($this->owner->hasOne() as $field => $type) {
+        foreach ($tree->hasOne() as $field => $type) {
+            if (!is_string($type)) {
+                continue;
+            }
+
             if (strpos($type, '.') !== false) {
                 $type = explode('.', $type)[0];
             }
 
-            if (singleton($type) instanceof Image) {
-                $image = $this->owner->getComponent($field);
+            if (class_exists($type) && singleton($type) instanceof Image) {
+                $image = $tree->getComponent($field);
 
                 try {
-                    if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                    if ($image->exists() && !isset($cachedImages[$image->ID])) {
                         $cachedImages[$image->ID] = true;
 
                         $list->push($image);
@@ -165,13 +208,22 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             }
         }
 
-        foreach ($this->owner->hasMany() as $field => $type) {
-            if (singleton($type) instanceof Image) {
-                $images = $this->owner->getComponents($field);
+        $hasMany = $tree->hasMany(false);
+        if (!is_array($hasMany)) {
+            $hasMany = [];
+        }
+
+        foreach ($hasMany as $field => $type) {
+            if (!is_string($type)) {
+                continue;
+            }
+
+            if (class_exists($type) && singleton($type) instanceof Image) {
+                $images = $tree->getComponents($field);
 
                 foreach ($images as $image) {
                     try {
-                        if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                        if ($image->exists() && !isset($cachedImages[$image->ID])) {
                             $cachedImages[$image->ID] = true;
 
                             $list->push($image);
@@ -183,29 +235,35 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             }
         }
 
-        foreach ($this->owner->manyMany() as $field => $type) {
+        $manyMany = $tree->manyMany();
+        if (!is_array($manyMany)) {
+            $manyMany = [];
+        }
+
+        foreach ($manyMany as $field => $type) {
             $image = false;
 
             if (is_array($type) && isset($type['through'])) {
-                if (singleton($type['through']) instanceof Image) {
+                $through = $type['through'];
+                if (is_string($through) && class_exists($through) && singleton($through) instanceof Image) {
                     $image = true;
                 }
-            } else {
+            } elseif (is_string($type)) {
                 if (strpos($type, '.') !== false) {
                     $type = explode('.', $type)[0];
                 }
 
-                if (singleton($type) instanceof Image) {
+                if (class_exists($type) && singleton($type) instanceof Image) {
                     $image = true;
                 }
             }
 
             if ($image) {
-                $images = $this->owner->$field();
+                $images = $tree->$field();
 
                 foreach ($images as $image) {
                     try {
-                        if ($image && $image->exists() && !isset($cachedImages[$image->ID])) {
+                        if ($image->exists() && !isset($cachedImages[$image->ID])) {
                             $cachedImages[$image->ID] = true;
 
                             $list->push($image);
@@ -217,8 +275,13 @@ class GoogleSitemapSiteTreeExtension extends GoogleSitemapExtension
             }
         }
 
-        $this->owner->extend('updateImagesForSitemap', $list);
+        $tree->extend('updateImagesForSitemap', $list);
 
         return $list;
+    }
+
+    protected function getSiteTreeOwner(): ?SiteTree
+    {
+        return $this->owner instanceof SiteTree ? $this->owner : null;
     }
 }

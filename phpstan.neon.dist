@@ -2,3 +2,13 @@ parameters:
   paths:
     - src
   level: 8
+  bootstrapFiles:
+    - phpstan-bootstrap.php
+  # SilverStripe reads config statics via reflection; PHPStan cannot see those reads.
+  ignoreErrors:
+    -
+      identifier: property.onlyWritten
+      paths:
+        - src/Control/GoogleSitemapController.php
+        - src/Extensions/GoogleSitemapSiteTreeExtension.php
+        - src/GoogleSitemap.php
