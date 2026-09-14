@@ -471,11 +471,10 @@ class GoogleSitemap
 
                 for ($i = 1; $i <= $neededForClass; $i++) {
                     // determine the last modified date for this slice
-                    $sliced = $list
-                        ->limit($countPerFile, ($i - 1) * $countPerFile)
-                        ->last();
+                    $sliced = $list->limit($countPerFile, ($i - 1) * $countPerFile);
+                    $maxLastEdited = $sliced->max('LastEdited');
 
-                    $lastModified = ($sliced) ? date('Y-m-d', strtotime($sliced->LastEdited)) : date('Y-m-d');
+                    $lastModified = ($maxLastEdited) ? date('Y-m-d', strtotime($maxLastEdited)) : date('Y-m-d');
 
                     $sitemaps->push(new ArrayData([
                         'ClassName' => $this->sanitiseClassName($class),
