@@ -471,8 +471,10 @@ class GoogleSitemap
 
                 for ($i = 1; $i <= $neededForClass; $i++) {
                     // determine the last modified date for this slice
-                    $sliced = $list->limit($countPerFile, ($i - 1) * $countPerFile);
-                    $maxLastEdited = $sliced->max('LastEdited');
+                    $maxLastEdited = $list
+                        ->limit($countPerFile, ($i - 1) * $countPerFile)
+                        ->sort(null)
+                        ->max('LastEdited');
 
                     $lastModified = ($maxLastEdited) ? date('Y-m-d', strtotime($maxLastEdited)) : date('Y-m-d');
 
