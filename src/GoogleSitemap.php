@@ -442,10 +442,12 @@ class GoogleSitemap
             $neededForPage = ceil($count / $countPerFile);
 
             for ($i = 1; $i <= $neededForPage; $i++) {
-                $lastEdited = $instances
+                $sliceIds = $instances
                     ->limit($countPerFile, ($i - 1) * $countPerFile)
-                    ->sort(null)
-                    ->max('LastEdited');
+                    ->column('ID');
+                $lastEdited = !empty($sliceIds)
+                    ? DataList::create($class)->filter('ID', $sliceIds)->max('LastEdited')
+                    : null;
 
                 $lastModified = ($lastEdited) ? date('Y-m-d', strtotime($lastEdited)) : date('Y-m-d');
 
@@ -471,10 +473,12 @@ class GoogleSitemap
 
                 for ($i = 1; $i <= $neededForClass; $i++) {
                     // determine the last modified date for this slice
-                    $maxLastEdited = $list
+                    $sliceIds = $list
                         ->limit($countPerFile, ($i - 1) * $countPerFile)
-                        ->sort(null)
-                        ->max('LastEdited');
+                        ->column('ID');
+                    $maxLastEdited = !empty($sliceIds)
+                        ? DataList::create($class)->filter('ID', $sliceIds)->max('LastEdited')
+                        : null;
 
                     $lastModified = ($maxLastEdited) ? date('Y-m-d', strtotime($maxLastEdited)) : date('Y-m-d');
 
