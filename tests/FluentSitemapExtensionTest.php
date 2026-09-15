@@ -240,10 +240,8 @@ class FluentSitemapExtensionTest extends FunctionalTest
             $path = $dir . DIRECTORY_SEPARATOR . $item;
             if (is_dir($path)) {
                 $this->removeDir($path);
-            } else {
-                if (is_file($path)) {
-                    unlink($path);
-                }
+            } elseif (is_file($path)) {
+                unlink($path);
             }
         }
 
