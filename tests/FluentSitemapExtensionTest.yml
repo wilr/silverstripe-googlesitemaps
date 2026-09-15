@@ -17,3 +17,7 @@ Wilr\GoogleSitemaps\Tests\Model\TestDataObject:
     Priority: 0.4
   Object2:
     Priority: 0.4
+
+Wilr\GoogleSitemaps\Tests\Model\FluentLocaleAwareDataObject:
+  LocaleAwareObject1:
+    Priority: 0.4

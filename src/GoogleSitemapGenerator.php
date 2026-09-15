@@ -66,12 +66,14 @@ class GoogleSitemapGenerator
             $locale = $localeField ? (string) $localeField : null;
             $unsanitised = str_replace('-', '\\', (string) $className);
 
-            $items = $sitemap->getItems($unsanitised, $page, $locale);
-            $sitemap->extend('updateGoogleSitemapItems', $items, $unsanitised, $page, $locale);
+            $body = $sitemap->inLocale($locale, function () use ($sitemap, $controller, $unsanitised, $page, $locale) {
+                $items = $sitemap->getItems($unsanitised, $page);
+                $sitemap->extend('updateGoogleSitemapItems', $items, $unsanitised, $page, $locale);
 
-            $body = (string) $controller->customise(new ArrayData([
-                'Items' => $items,
-            ]))->renderWith('Wilr\\GoogleSitemaps\\Control\\GoogleSitemapController_sitemap');
+                return (string) $controller->customise(new ArrayData([
+                    'Items' => $items,
+                ]))->renderWith('Wilr\\GoogleSitemaps\\Control\\GoogleSitemapController_sitemap');
+            });
 
             $this->writeFile(
                 $directory . DIRECTORY_SEPARATOR . $this->subSitemapFileName($className, $page, $locale),

@@ -3,6 +3,7 @@
 namespace Wilr\GoogleSitemaps\Tests;
 
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Model\List\ArrayList;
 use TractorCow\Fluent\Model\Locale;
@@ -10,6 +11,8 @@ use TractorCow\Fluent\State\FluentState;
 use Wilr\GoogleSitemaps\Extensions\FluentSitemapExtension;
 use Wilr\GoogleSitemaps\Extensions\GoogleSitemapExtension;
 use Wilr\GoogleSitemaps\GoogleSitemap;
+use Wilr\GoogleSitemaps\GoogleSitemapGenerator;
+use Wilr\GoogleSitemaps\Tests\Model\FluentLocaleAwareDataObject;
 use Wilr\GoogleSitemaps\Tests\Model\TestDataObject;
 
 /**
@@ -24,6 +27,7 @@ class FluentSitemapExtensionTest extends FunctionalTest
     protected $usesDatabase = true;
 
     protected static $extra_dataobjects = [
+        FluentLocaleAwareDataObject::class,
         TestDataObject::class,
     ];
 
@@ -179,5 +183,68 @@ class FluentSitemapExtensionTest extends FunctionalTest
 
         $expected = 'sitemap/Wilr-GoogleSitemaps-Tests-Model-TestDataObject/1/fr_FR';
         $this->assertStringContainsString($expected, $body, 'fr_FR entry should appear in index');
+    }
+
+    public function testLocaleSubSitemapRendersLinksInRequestedLocale(): void
+    {
+        GoogleSitemap::register_dataobject(FluentLocaleAwareDataObject::class);
+        FluentState::singleton()->setLocale('en_NZ');
+
+        $response = $this->get('sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-FluentLocaleAwareDataObject/1/fr_FR');
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertStringContainsString('/fr/fluent-locale-aware/', $response->getBody());
+        $this->assertStringNotContainsString('/en/fluent-locale-aware/', $response->getBody());
+    }
+
+    public function testGeneratorRendersLinksInRequestedLocale(): void
+    {
+        GoogleSitemap::register_dataobject(FluentLocaleAwareDataObject::class);
+        FluentState::singleton()->setLocale('en_NZ');
+        Config::modify()->set(GoogleSitemap::class, 'enable_gzip', false);
+        $cacheDir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
+            . DIRECTORY_SEPARATOR
+            . 'ss-googlesitemaps-fluent-' . uniqid('', true);
+        Config::modify()->set(GoogleSitemap::class, 'static_cache_path', $cacheDir);
+
+        try {
+            $generator = Injector::inst()->create(GoogleSitemapGenerator::class);
+            $generator->generate();
+
+            $path = $cacheDir
+                . DIRECTORY_SEPARATOR
+                . $generator->subSitemapFileName('Wilr-GoogleSitemaps-Tests-Model-FluentLocaleAwareDataObject', 1, 'fr_FR');
+
+            $this->assertFileExists($path);
+            $body = (string) file_get_contents($path);
+            $this->assertStringContainsString('/fr/fluent-locale-aware/', $body);
+            $this->assertStringNotContainsString('/en/fluent-locale-aware/', $body);
+        } finally {
+            $this->removeDir($cacheDir);
+        }
+    }
+
+    private function removeDir(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $items = scandir($dir) ?: [];
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dir . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($path)) {
+                $this->removeDir($path);
+            } else {
+                @unlink($path);
+            }
+        }
+
+        @rmdir($dir);
     }
 }

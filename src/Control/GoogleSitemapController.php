@@ -129,12 +129,16 @@ class GoogleSitemapController extends Controller
                 }
             }
 
-            $items = GoogleSitemap::inst()->getItems($class, $page, $locale);
-            $this->extend('updateGoogleSitemapItems', $items, $class, $page, $locale);
+            $sitemap = GoogleSitemap::inst();
 
-            return array(
-                'Items' => $items
-            );
+            return $sitemap->inLocale($locale, function () use ($sitemap, $class, $page, $locale) {
+                $items = $sitemap->getItems($class, $page);
+                $this->extend('updateGoogleSitemapItems', $items, $class, $page, $locale);
+
+                return (string) $this->customise(new ArrayData([
+                    'Items' => $items,
+                ]))->renderWith('Wilr\\GoogleSitemaps\\Control\\GoogleSitemapController_sitemap');
+            });
         }
 
         return new HTTPResponse('Page not found', 404);
