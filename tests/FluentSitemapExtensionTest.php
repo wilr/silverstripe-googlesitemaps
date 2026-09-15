@@ -241,10 +241,14 @@ class FluentSitemapExtensionTest extends FunctionalTest
             if (is_dir($path)) {
                 $this->removeDir($path);
             } else {
-                @unlink($path);
+                if (is_file($path)) {
+                    unlink($path);
+                }
             }
         }
 
-        @rmdir($dir);
+        if (is_dir($dir)) {
+            rmdir($dir);
+        }
     }
 }
