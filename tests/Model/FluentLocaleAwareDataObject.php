@@ -21,7 +21,8 @@ class FluentLocaleAwareDataObject extends DataObject implements TestOnly
     public function AbsoluteLink()
     {
         $locale = (string) FluentState::singleton()->getLocale();
-        $segment = strtolower((string) strtok($locale, '_'));
+        $parts = explode('_', $locale);
+        $segment = strtolower($parts[0] ?? '');
 
         return Director::absoluteURL($segment . '/fluent-locale-aware/' . $this->ID);
     }
