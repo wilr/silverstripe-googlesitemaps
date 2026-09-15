@@ -245,8 +245,6 @@ class FluentSitemapExtensionTest extends FunctionalTest
             }
         }
 
-        if (is_dir($dir)) {
-            rmdir($dir);
-        }
+        rmdir($dir);
     }
 }
