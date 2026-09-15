@@ -189,8 +189,10 @@ class FluentSitemapExtensionTest extends FunctionalTest
     {
         GoogleSitemap::register_dataobject(FluentLocaleAwareDataObject::class);
         FluentState::singleton()->setLocale('en_NZ');
+        $url = 'sitemap.xml/sitemap/'
+            . 'Wilr-GoogleSitemaps-Tests-Model-FluentLocaleAwareDataObject/1/fr_FR';
 
-        $response = $this->get('sitemap.xml/sitemap/Wilr-GoogleSitemaps-Tests-Model-FluentLocaleAwareDataObject/1/fr_FR');
+        $response = $this->get($url);
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertStringContainsString('/fr/fluent-locale-aware/', $response->getBody());
@@ -213,7 +215,11 @@ class FluentSitemapExtensionTest extends FunctionalTest
 
             $path = $cacheDir
                 . DIRECTORY_SEPARATOR
-                . $generator->subSitemapFileName('Wilr-GoogleSitemaps-Tests-Model-FluentLocaleAwareDataObject', 1, 'fr_FR');
+                . $generator->subSitemapFileName(
+                    'Wilr-GoogleSitemaps-Tests-Model-FluentLocaleAwareDataObject',
+                    1,
+                    'fr_FR'
+                );
 
             $this->assertFileExists($path);
             $body = (string) file_get_contents($path);
