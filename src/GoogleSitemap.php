@@ -433,9 +433,13 @@ class GoogleSitemap
                 \Translatable::disable_locale_filter();
             }
 
-            $filter = ($filter) ? "\"ShowInSearch\" = 1" : "";
             $class = 'SilverStripe\CMS\Model\SiteTree';
-            $instances = Versioned::get_by_stage($class, 'Live', $filter);
+            $instances = Versioned::get_by_stage($class, 'Live');
+
+            if ($filter) {
+                $instances = $instances->filter('ShowInSearch', 1);
+            }
+
             $this->extend("alterDataList", $instances, $class);
             $count = $instances->count();
 
