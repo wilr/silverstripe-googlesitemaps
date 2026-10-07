@@ -14,6 +14,7 @@ use SilverStripe\Versioned\Versioned;
 use Wilr\GoogleSitemaps\Extensions\GoogleSitemapExtension;
 use Wilr\GoogleSitemaps\GoogleSitemap;
 use Wilr\GoogleSitemaps\Tests\Model\OtherDataObject;
+use Wilr\GoogleSitemaps\Tests\Model\ShowInSearchPage;
 use Wilr\GoogleSitemaps\Tests\Model\TestDataObject;
 use Wilr\GoogleSitemaps\Tests\Model\UnviewableDataObject;
 
@@ -39,7 +40,8 @@ class GoogleSitemapTest extends FunctionalTest
     protected static $extra_dataobjects = [
         TestDataObject::class,
         OtherDataObject::class,
-        UnviewableDataObject::class
+        UnviewableDataObject::class,
+        ShowInSearchPage::class,
     ];
 
     protected static $extra_extensions = [
@@ -194,6 +196,21 @@ class GoogleSitemapTest extends FunctionalTest
         $this->assertXmlStringEqualsXmlFile(__DIR__ . '/xml/' . __FUNCTION__ . '.xml', $body);
 
         Config::inst()->set(GoogleSitemap::class, 'objects_per_sitemap', $original);
+    }
+
+    public function testIndexFileWithPageDeclaringShowInSearch(): void
+    {
+        $page = ShowInSearchPage::create(['Title' => 'Own ShowInSearch']);
+        $page->write();
+        $page->publishSingle();
+
+        $response = $this->get('sitemap.xml');
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertStringContainsString(
+            'sitemap.xml/sitemap/SilverStripe-CMS-Model-SiteTree/1',
+            $response->getBody()
+        );
     }
 
     public function testRegisterRoutesIncludesAllRoutes(): void
