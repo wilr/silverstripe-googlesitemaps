@@ -185,6 +185,20 @@ class FluentSitemapExtensionTest extends FunctionalTest
         $this->assertStringContainsString($expected, $body, 'fr_FR entry should appear in index');
     }
 
+    public function testIndexPageWithRoutesDoesNotEmitLastModifiedWarnings(): void
+    {
+        GoogleSitemap::register_routes(['/fluent-test-route/']);
+
+        $response = $this->get('sitemap.xml');
+
+        $this->assertSame(200, $response->getStatusCode());
+
+        $body = $response->getBody();
+        $this->assertStringNotContainsString('Undefined array key "LastModified"', $body);
+        $this->assertStringContainsString('sitemap/GoogleSitemapRoute/1/en_NZ', $body);
+        $this->assertStringContainsString('sitemap/GoogleSitemapRoute/1/fr_FR', $body);
+    }
+
     public function testLocaleSubSitemapRendersLinksInRequestedLocale(): void
     {
         GoogleSitemap::register_dataobject(FluentLocaleAwareDataObject::class);
