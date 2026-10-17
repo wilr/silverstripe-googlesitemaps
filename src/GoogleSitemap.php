@@ -501,7 +501,8 @@ class GoogleSitemap
             for ($i = 1; $i <= $needed; $i++) {
                 $sitemaps->push(new ArrayData([
                     'ClassName' => 'GoogleSitemapRoute',
-                    'Page' => $i
+                    'Page' => $i,
+                    'LastModified' => null,
                 ]));
             }
         }
